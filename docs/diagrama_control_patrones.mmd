@@ -41,6 +41,7 @@ classDiagram
         +para_personas(personas)
         +en_mesa(mesa_id)
         +con_notas(notas)
+        +con_items(items)
         +build() Reserva
     }
     class ReservaDirector {
@@ -72,13 +73,22 @@ classDiagram
         +reservar(actor, datos)
         +cancelar(actor, reserva_id)
         +mis_reservas(actor)
+        +reservar_con_pre_pedido(actor, datos, sesion)
         +listar_restaurantes(nombre, tipo_cocina, ciudad)
+        +carta_de(restaurante_id)
+        +carrito_ver(sesion)
+        +carrito_agregar(sesion, producto_id, cantidad)
         +enriquecer(reservas)
     }
+    class CarritoService { +agregar(sesion, producto_id, cantidad) +items_para_reserva(sesion, restaurante_id) }
+    class CartaService { +carta(restaurante_id, solo_disponibles) +detalle_items(reserva_id) }
     ReservaFacade o-- IReservaService : recibe el PROXY
     ReservaFacade ..> RestauranteService
     ReservaFacade ..> MesaService
     ReservaFacade ..> HorarioService
+    ReservaFacade ..> CarritoService
+    ReservaFacade ..> CartaService
+    ReservaBuilder ..> ProductoDAO : precio desde la BD
     %% ---- capas ----
     class ClienteController { <<presentación>> }
     ClienteController --> ReservaFacade

@@ -1,11 +1,12 @@
 """API JSON para el frontend (JavaScript vanilla con fetch)."""
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
 from app.datos.modelos import Usuario
 from app.dependencias import fachada
 from app.negocio.excepciones import NoEncontradoError, ReglaNegocioError
-from app.presentacion.comun import requiere_usuario
+from app.presentacion.comun import requiere_cliente, requiere_usuario, verificar_csrf
 
 router = APIRouter(prefix="/api")
 
@@ -20,3 +21,38 @@ def disponibilidad(restaurante_id: int, fecha: str, personas: int = 2,
         return JSONResponse({"error": str(error)}, status_code=404)
     except ReglaNegocioError as error:
         return JSONResponse({"error": str(error)}, status_code=400)
+
+
+# ---------- pre-pedido (carrito en la sesión) ----------
+class LineaCarrito(BaseModel):
+    producto_id: int
+    cantidad: int = 1
+
+
+def _respuesta_carrito(accion):
+    try:
+        return accion()
+    except NoEncontradoError as error:
+        return JSONResponse({"error": str(error)}, status_code=404)
+    except ReglaNegocioError as error:
+        return JSONResponse({"error": str(error)}, status_code=400)
+
+
+@router.get("/carrito")
+def ver_carrito(request: Request, usuario: Usuario = Depends(requiere_cliente)):
+    return fachada.carrito_ver(request.session)
+
+
+@router.post("/carrito/agregar", dependencies=[Depends(verificar_csrf)])
+def agregar_al_carrito(request: Request, linea: LineaCarrito, usuario: Usuario = Depends(requiere_cliente)):
+    return _respuesta_carrito(lambda: fachada.carrito_agregar(request.session, linea.producto_id, linea.cantidad))
+
+
+@router.post("/carrito/cambiar", dependencies=[Depends(verificar_csrf)])
+def cambiar_carrito(request: Request, linea: LineaCarrito, usuario: Usuario = Depends(requiere_cliente)):
+    return _respuesta_carrito(lambda: fachada.carrito_cambiar(request.session, linea.producto_id, linea.cantidad))
+
+
+@router.post("/carrito/vaciar", dependencies=[Depends(verificar_csrf)])
+def vaciar_carrito(request: Request, usuario: Usuario = Depends(requiere_cliente)):
+    return fachada.carrito_vaciar(request.session)

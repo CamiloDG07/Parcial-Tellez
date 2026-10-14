@@ -28,3 +28,15 @@ def proximo_dia(dia_semana: int | None = None, desde: int = 2) -> str:
     while dia_semana is not None and d.weekday() != dia_semana:
         d += timedelta(days=1)
     return d.isoformat()
+
+
+@pytest.fixture(autouse=True)
+def limpiar_subidas():
+    """Las pruebas que suben imágenes escriben en static/uploads: se borran al terminar."""
+    from app import config
+    antes = set(config.UPLOADS_DIR.glob("*")) if config.UPLOADS_DIR.exists() else set()
+    yield
+    if config.UPLOADS_DIR.exists():
+        for f in set(config.UPLOADS_DIR.glob("*")) - antes:
+            if f.name != ".gitkeep":
+                f.unlink()

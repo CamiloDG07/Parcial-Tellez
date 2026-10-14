@@ -60,10 +60,11 @@ class ReservaService(IReservaService):
                                        .a_las(datos.get("hora"))
                                        .para_personas(datos.get("personas"))
                                        .en_mesa(datos.get("mesa_id"))
-                                       .con_notas(datos.get("notas", "")))
+                                       .con_notas(datos.get("notas", ""))
+                                       .con_items(datos.get("items")))
         with self._cerrojo:
             reserva = constructor.build()
-            reserva.id = self._dao.insertar(reserva)
+            reserva.id = self._dao.insertar_con_items(reserva)
         return reserva
 
     def obtener(self, actor: Usuario, reserva_id: int) -> Reserva:

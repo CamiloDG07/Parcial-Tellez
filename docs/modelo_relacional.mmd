@@ -5,6 +5,11 @@ erDiagram
     restaurante ||--o{ horario : "abre según"
     restaurante ||--o{ reserva : "recibe"
     mesa ||--o{ reserva : "se asigna a"
+    restaurante ||--o{ categoria : "organiza su carta en"
+    restaurante ||--o{ producto : "ofrece"
+    categoria ||--o{ producto : "agrupa"
+    reserva ||--o{ reserva_item : "pre-pedido (ON DELETE CASCADE)"
+    producto ||--o{ reserva_item : "se pide en"
     usuario {
         INTEGER id PK
         TEXT nombre
@@ -47,4 +52,27 @@ erDiagram
         TEXT estado "CHECK PENDIENTE|CONFIRMADA|CANCELADA"
         TEXT notas
         TEXT creado_en
+    }
+    categoria {
+        INTEGER id PK
+        INTEGER restaurante_id FK
+        TEXT nombre "UK con restaurante_id"
+        INTEGER orden
+    }
+    producto {
+        INTEGER id PK
+        INTEGER restaurante_id FK
+        INTEGER categoria_id FK
+        TEXT nombre
+        TEXT descripcion
+        INTEGER precio_cop "CHECK >= 0 (COP enteros)"
+        TEXT imagen
+        INTEGER disponible "CHECK 0|1"
+    }
+    reserva_item {
+        INTEGER id PK
+        INTEGER reserva_id FK
+        INTEGER producto_id FK
+        INTEGER cantidad "CHECK > 0"
+        INTEGER precio_unitario_cop "CHECK >= 0"
     }

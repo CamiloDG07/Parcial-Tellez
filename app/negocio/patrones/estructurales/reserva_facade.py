@@ -6,6 +6,7 @@ from datetime import date
 from app.datos.modelos import Reserva, Restaurante, Usuario
 from app.negocio.excepciones import ReglaNegocioError
 from app.negocio.servicios.auth_service import AuthService
+from app.negocio.servicios.carta_service import CarritoService, CartaService
 from app.negocio.servicios.reserva_service import IReservaService
 from app.negocio.servicios.restaurante_service import HorarioService, MesaService, RestauranteService
 
@@ -19,9 +20,11 @@ class ReservaFacade:
     """
 
     def __init__(self, reservas: IReservaService, restaurantes: RestauranteService,
-                 mesas: MesaService, horarios: HorarioService, usuarios: AuthService) -> None:
+                 mesas: MesaService, horarios: HorarioService, usuarios: AuthService,
+                 carta: CartaService, carrito: CarritoService) -> None:
         self._reservas, self._restaurantes = reservas, restaurantes
-        self._mesas, self._horarios, self._usuarios = mesas, horarios, usuarios
+        self._mesas, self._horarios, self._usuarios, self._carta = mesas, horarios, usuarios, carta
+        self._carrito = carrito
 
     @staticmethod
     def _parsear_fecha(texto: str) -> date:
@@ -85,8 +88,40 @@ class ReservaFacade:
     def cancelar(self, actor: Usuario, reserva_id: int) -> None:
         self._reservas.cancelar_reserva(actor, reserva_id)
 
+    def contar_proximas(self, actor: Usuario, hoy: str) -> int:
+        """Reservas no canceladas desde `hoy` (insignia de la barra superior)."""
+        return sum(1 for r in self._reservas.mis_reservas(actor) if r.estado != "CANCELADA" and r.fecha >= hoy)
+
     def mis_reservas(self, actor: Usuario) -> list[dict]:
         return self.enriquecer(self._reservas.mis_reservas(actor))
+
+    def carta_de(self, restaurante_id: int) -> list[dict]:
+        """Carta pública (solo productos disponibles) agrupada por categoría."""
+        return self._carta.carta(restaurante_id, solo_disponibles=True)
+
+    # --- pre-pedido (carrito en la sesión del cliente) ---
+    def carrito_ver(self, sesion) -> dict:
+        return self._carrito.resumen(sesion)
+
+    def carrito_agregar(self, sesion, producto_id: int, cantidad: int) -> dict:
+        self._carrito.agregar(sesion, producto_id, cantidad)
+        return self._carrito.resumen(sesion)
+
+    def carrito_cambiar(self, sesion, producto_id: int, cantidad: int) -> dict:
+        self._carrito.cambiar(sesion, producto_id, cantidad)
+        return self._carrito.resumen(sesion)
+
+    def carrito_vaciar(self, sesion) -> dict:
+        self._carrito.vaciar(sesion)
+        return self._carrito.resumen(sesion)
+
+    def reservar_con_pre_pedido(self, actor: Usuario, datos: dict, sesion) -> Reserva:
+        """Reserva usando el carrito de la sesión (debe ser del mismo restaurante); lo vacía al confirmar."""
+        datos = dict(datos)
+        datos["items"] = self._carrito.items_para_reserva(sesion, int(datos["restaurante_id"]))
+        reserva = self.reservar(actor, datos)
+        self._carrito.vaciar(sesion)
+        return reserva
 
     # --- apoyo a las vistas ---
     def enriquecer(self, reservas: list[Reserva]) -> list[dict]:
@@ -100,6 +135,8 @@ class ReservaFacade:
                 mesas[r.mesa_id] = self._mesas.obtener(r.mesa_id)
             if r.usuario_id not in usuarios:
                 usuarios[r.usuario_id] = self._usuarios.obtener(r.usuario_id)
+            detalle = self._carta.detalle_items(r.id)
             filas.append({"reserva": r, "restaurante": restaurantes[r.restaurante_id],
-                          "mesa": mesas[r.mesa_id], "cliente": usuarios[r.usuario_id]})
+                          "mesa": mesas[r.mesa_id], "cliente": usuarios[r.usuario_id],
+                          "detalle": detalle, "total_cop": sum(d["item"].subtotal_cop for d in detalle)})
         return filas

@@ -26,4 +26,21 @@
     const b = ev.target.closest('[data-confirmar]');
     if (b && !window.confirm(b.dataset.confirmar)) ev.preventDefault();
   });
+
+  // Toasts de éxito/error (región aria-live), reutilizables desde otros scripts.
+  let contenedor;
+  window.mostrarToast = (texto, tipo = 'ok') => {
+    if (!contenedor) {
+      contenedor = document.createElement('div');
+      contenedor.className = 'toasts';
+      contenedor.setAttribute('role', 'status');
+      contenedor.setAttribute('aria-live', 'polite');
+      document.body.appendChild(contenedor);
+    }
+    const t = document.createElement('div');
+    t.className = 'toast' + (tipo === 'error' ? ' toast-error' : '');
+    t.textContent = texto;
+    contenedor.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+  };
 })();

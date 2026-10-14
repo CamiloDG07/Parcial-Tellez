@@ -62,8 +62,24 @@
       <p class="error-campo" id="err-mesa" role="alert"></p>
     </div>
 
+    <div class="panel ancho" id="paso-pedido">
+      <h2 class="subtitulo">5 · Pre-pedido (opcional)</h2>
+      {% if carrito and carrito.lineas %}
+        {% if carrito.restaurante_id != restaurante.id %}
+        <div class="aviso aviso-error" role="alert">Tu pre-pedido es de otro restaurante y no se puede confirmar aquí. Vacíalo desde el cajón o elige ese restaurante.</div>
+        {% endif %}
+        <ul class="detalle-items">
+          {% for l in carrito.lineas %}<li>{{ l.cantidad }} × {{ l.nombre }} <span>{{ l.subtotal_cop|cop }}</span></li>{% endfor %}
+          <li class="total">TOTAL ESTIMADO <span>{{ carrito.total_cop|cop }}</span></li>
+        </ul>
+        <p class="ayuda">Se confirma junto con la reserva. No hay pago en línea.</p>
+      {% else %}
+        <p class="ayuda">Puedes adelantar tu pedido desde la <a href="/carta?restaurante_id={{ restaurante.id }}">carta</a>; se guardará aquí hasta que confirmes.</p>
+      {% endif %}
+    </div>
+
     <div class="panel ancho">
-      <h2 class="subtitulo">5 · Notas (opcional)</h2>
+      <h2 class="subtitulo">6 · Notas (opcional)</h2>
       <label for="notas">Alergias, celebración, silla para bebé…</label>
       <textarea id="notas" name="notas" rows="3" maxlength="300">{{ valores.notas }}</textarea>
       <button class="btn btn-rojo btn-grande" type="submit">CONFIRMAR RESERVA</button>

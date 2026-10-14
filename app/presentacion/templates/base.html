@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block titulo %}Reservas{% endblock %} · {{ BRAND_NAME }}</title>
+  <meta name="csrf-token" content="{{ csrf_token }}">
   <meta name="description" content="Reserva tu mesa en {{ BRAND_NAME }}: restaurantes con vigilancia nocturna.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,6 +37,7 @@
       {% else %}
         <a href="/reservar" {% if request.url.path == '/reservar' %}aria-current="page"{% endif %}>RESERVAR</a>
         <a href="/restaurantes" {% if request.url.path == '/restaurantes' %}aria-current="page"{% endif %}>RESTAURANTES</a>
+        <a href="/carta" {% if request.url.path == '/carta' %}aria-current="page"{% endif %}>CARTA</a>
         <a href="/mis-reservas" {% if request.url.path == '/mis-reservas' %}aria-current="page"{% endif %}>MIS RESERVAS</a>
       {% endif %}
     </nav>
@@ -43,16 +45,21 @@
       {% if usuario %}
         <span class="usuario" title="{{ usuario.email }}">{{ usuario.nombre }}</span>
         {% if usuario.rol == 'cliente' %}
-        <a class="carrito" href="/mis-reservas" aria-label="Mis reservas próximas: {{ reservas_proximas }}">
-          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 5h2l2 10h11l2-7H7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="19" r="1.6" fill="currentColor"/><circle cx="17" cy="19" r="1.6" fill="currentColor"/></svg>
+        <a class="carrito" href="/mis-reservas" aria-label="Mis reservas próximas: {{ reservas_proximas }}" title="Reservas próximas">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           <span class="insignia" id="insignia-reservas">{{ reservas_proximas }}</span>
         </a>
+        <button class="carrito carrito-btn" id="abrir-carrito" type="button" aria-controls="cajon-carrito" aria-expanded="false" aria-label="Abrir pre-pedido" title="Pre-pedido">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 5h2l2 10h11l2-7H7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="19" r="1.6" fill="currentColor"/><circle cx="17" cy="19" r="1.6" fill="currentColor"/></svg>
+          <span class="insignia" id="insignia-carrito">{{ carrito.cantidad if carrito else 0 }}</span>
+        </button>
         {% endif %}
         <form method="post" action="/logout" class="en-linea">
           <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
           <button class="btn btn-fantasma btn-sm" type="submit">SALIR</button>
         </form>
       {% else %}
+        <a class="btn btn-fantasma btn-sm" href="/registro">REGISTRARSE</a>
         <a class="btn btn-dorado btn-sm" href="/login">INICIAR SESIÓN</a>
       {% endif %}
     </div>
@@ -67,12 +74,30 @@
     {% block contenido %}{% endblock %}
   </main>
 
+  {% if usuario and usuario.rol == 'cliente' %}
+  <div class="velo" id="velo-carrito" hidden></div>
+  <aside class="cajon" id="cajon-carrito" aria-label="Pre-pedido" aria-hidden="true" tabindex="-1">
+    <div class="cajon-cab"><h2 class="subtitulo">TU PRE-PEDIDO</h2>
+      <button class="btn btn-fantasma btn-sm" type="button" id="cerrar-carrito" aria-label="Cerrar pre-pedido">CERRAR</button></div>
+    <ul class="cajon-lista" id="carrito-lineas"></ul>
+    <p class="vacio" id="carrito-vacio" hidden>Aún no agregaste platos.</p>
+    <div class="cajon-pie">
+      <p class="cajon-total">TOTAL <strong id="carrito-total">$0</strong></p>
+      <p class="ayuda">Estimado: se confirma junto con tu reserva. Sin pago en línea.</p>
+      <a class="btn btn-rojo" href="/reservar" id="carrito-reservar">RESERVAR CON ESTE PEDIDO</a>
+      <button class="btn btn-fantasma btn-sm" type="button" id="vaciar-carrito">VACIAR</button>
+    </div>
+  </aside>
+  <script type="application/json" id="carrito-inicial">{{ carrito|tojson }}</script>
+  {% endif %}
+
   <footer class="pie">
     <p><strong>{{ BRAND_NAME }}</strong> — marca ficticia para un proyecto académico (Patrones de Diseño de Software, Universidad Sergio Arboleda). Inspiración estética propia; sin material de terceros.</p>
     <p class="pie-creditos">Tipografías: Google Fonts (OFL). Ilustraciones: SVG/CSS originales.</p>
   </footer>
 
   <script src="/static/js/base.js" defer></script>
+  {% if usuario and usuario.rol == 'cliente' %}<script src="/static/js/carrito.js" defer></script>{% endif %}
   {% block scripts %}{% endblock %}
 </body>
 </html>

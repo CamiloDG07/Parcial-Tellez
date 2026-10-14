@@ -6,11 +6,11 @@ flowchart TB
     subgraph N["CAPA 2 · Negocio"]
         F["ReservaFacade"]
         PX["ReservaServiceProxy"]
-        S["ReservaService · MesaService · HorarioService · RestauranteService · AuthService"]
+        S["ReservaService · MesaService · HorarioService · RestauranteService · AuthService · CartaService · CarritoService · EstadisticasService"]
         PT["Builder · Factory Method"]
     end
     subgraph D["CAPA 3 · Datos (Modelo + DAO)"]
-        DAO["BaseDAO · UsuarioDAO · RestauranteDAO · MesaDAO · HorarioDAO · ReservaDAO"]
+        DAO["BaseDAO · UsuarioDAO · RestauranteDAO · MesaDAO · HorarioDAO · ReservaDAO · CategoriaDAO · ProductoDAO · ReservaItemDAO"]
         CX["ConexionBD (Singleton)"]
         DB[("SQLite · schema.sql")]
     end

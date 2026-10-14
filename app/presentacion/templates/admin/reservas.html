@@ -6,6 +6,7 @@
   <h1 class="titular">RESERVAS</h1>
 
   <form method="get" action="/admin/reservas" class="panel filtros">
+    <div><label for="f-q">Buscar (cliente, correo, nota o #)</label><input id="f-q" name="q" type="search" value="{{ filtro.q }}" maxlength="60"></div>
     <div><label for="f-fecha">Fecha</label><input id="f-fecha" name="fecha" type="date" value="{{ filtro.fecha }}"></div>
     <div><label for="f-estado">Estado</label>
       <select id="f-estado" name="estado"><option value="">Todos</option>
@@ -20,7 +21,7 @@
   <table class="tabla">
     <caption class="solo-lectores">Reservas del restaurante</caption>
     <thead><tr><th scope="col">#</th><th scope="col">Cliente</th><th scope="col">Fecha</th><th scope="col">Hora</th>
-      <th scope="col">Pers.</th><th scope="col">Mesa</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead>
+      <th scope="col">Pers.</th><th scope="col">Mesa</th><th scope="col">Pre-pedido</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead>
     <tbody>
     {% for f in filas %}{% set r = f.reserva %}
       <tr>
@@ -30,6 +31,7 @@
         <td data-etiqueta="Hora">{{ r.hora }}</td>
         <td data-etiqueta="Pers.">{{ r.num_personas }}</td>
         <td data-etiqueta="Mesa">{{ f.mesa.numero }}</td>
+        <td data-etiqueta="Pre-pedido">{% if f.detalle %}{{ f.total_cop|cop }} <small>({{ f.detalle|length }} plato{{ 's' if f.detalle|length > 1 }})</small>{% else %}—{% endif %}</td>
         <td data-etiqueta="Estado"><span class="estado estado-{{ r.estado|lower }}">{{ r.estado }}</span></td>
         <td data-etiqueta="Acciones" class="acciones">
           {% if r.estado == 'PENDIENTE' %}
@@ -44,11 +46,17 @@
           {% endif %}
         </td>
       </tr>
-      {% if r.notas %}<tr class="fila-notas"><td></td><td colspan="7">Notas: {{ r.notas }}</td></tr>{% endif %}
+      {% if r.notas %}<tr class="fila-notas"><td></td><td colspan="8">Notas: {{ r.notas }}</td></tr>{% endif %}
     {% endfor %}
     </tbody>
   </table>
   </div>
+  <nav class="paginacion" aria-label="Paginación de reservas">
+    <span>{{ total }} reserva(s) · página {{ pagina }} de {{ paginas }}</span>
+    {% set base_q = {'q': filtro.q, 'fecha': filtro.fecha, 'estado': filtro.estado} %}
+    {% if pagina > 1 %}<a class="btn btn-fantasma btn-sm" href="/admin/reservas?{{ (base_q|urlencode) }}&pagina={{ pagina - 1 }}">← ANTERIOR</a>{% endif %}
+    {% if pagina < paginas %}<a class="btn btn-fantasma btn-sm" href="/admin/reservas?{{ (base_q|urlencode) }}&pagina={{ pagina + 1 }}">SIGUIENTE →</a>{% endif %}
+  </nav>
   {% else %}
   <p class="vacio">No hay reservas con esos filtros.</p>
   {% endif %}

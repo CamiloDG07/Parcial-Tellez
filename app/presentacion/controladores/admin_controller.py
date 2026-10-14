@@ -1,11 +1,13 @@
 """Controlador del administrador: gestiona solo el restaurante que administra."""
 from datetime import date
 
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 
 from app import config
 from app.datos.modelos import Usuario
-from app.dependencias import fachada, horario_service, mesa_service, reserva_service, restaurante_service
+from app.dependencias import (carta_service, estadisticas_service, fachada, horario_service, mesa_service,
+                              reserva_service, restaurante_service)
+from app.negocio.imagenes import MAX_BYTES, guardar_imagen
 from app.negocio.excepciones import NoAutorizadoError, NoEncontradoError, ReglaNegocioError
 from app.presentacion.comun import avisar, entero, renderizar, redirigir, requiere_admin, verificar_csrf
 
@@ -29,15 +31,13 @@ def _ejecutar(request: Request, accion, ok: str, destino: str):
 @router.get("")
 def panel(request: Request, admin: Usuario = Depends(requiere_admin)):
     rest = _restaurante(admin)
-    todas = reserva_service.listar_por_restaurante(admin, rest.id)
-    hoy = date.today().isoformat()
-    resumen = {
-        "hoy": sum(1 for r in todas if r.fecha == hoy and r.estado != "CANCELADA"),
-        "pendientes": sum(1 for r in todas if r.estado == "PENDIENTE"),
-        "proximas": sum(1 for r in todas if r.fecha >= hoy and r.estado != "CANCELADA"),
-        "mesas": len(mesa_service.listar(rest.id)),
-    }
-    return renderizar(request, "admin/panel.html", restaurante=rest, resumen=resumen)
+    datos = estadisticas_service.panel(rest.id)
+    maximo = max([d["n"] for d in datos["serie_14d"]] + [1])
+    for d in datos["serie_14d"]:
+        d["pct"] = round(100 * d["n"] / maximo)
+    tope = max([n for _, n in datos["top_productos"]] + [1])
+    top = [{"nombre": nombre, "n": n, "pct": round(100 * n / tope)} for nombre, n in datos["top_productos"]]
+    return renderizar(request, "admin/panel.html", restaurante=rest, datos=datos, top=top, mesas=len(mesa_service.listar(rest.id)))
 
 
 # ---------- mesas ----------
@@ -95,13 +95,27 @@ def eliminar_horario(request: Request, horario_id: int, admin: Usuario = Depends
 
 
 # ---------- reservas ----------
+POR_PAGINA = 10
+
+
 @router.get("/reservas")
-def reservas(request: Request, fecha: str = "", estado: str = "", admin: Usuario = Depends(requiere_admin)):
+def reservas(request: Request, fecha: str = "", estado: str = "", q: str = "", pagina: int = 1,
+             admin: Usuario = Depends(requiere_admin)):
     rest = _restaurante(admin)
     estado = estado if estado in config.ESTADOS else ""
     lista = reserva_service.listar_por_restaurante(admin, rest.id, fecha or None, estado or None)
-    return renderizar(request, "admin/reservas.html", restaurante=rest, filas=fachada.enriquecer(lista),
-                      filtro={"fecha": fecha, "estado": estado}, estados=config.ESTADOS)
+    filas = fachada.enriquecer(lista)
+    termino = q.strip().lower()
+    if termino:
+        filas = [f for f in filas if termino in " ".join([
+            str(f["reserva"].id), f["cliente"].nombre, f["cliente"].email, f["reserva"].notas]).lower()]
+    total = len(filas)
+    paginas = max(1, -(-total // POR_PAGINA))
+    pagina = min(max(pagina, 1), paginas)
+    filas = filas[(pagina - 1) * POR_PAGINA: pagina * POR_PAGINA]
+    return renderizar(request, "admin/reservas.html", restaurante=rest, filas=filas, total=total,
+                      filtro={"fecha": fecha, "estado": estado, "q": q}, estados=config.ESTADOS,
+                      pagina=pagina, paginas=paginas)
 
 
 @router.post("/reservas/{reserva_id}/confirmar", dependencies=[Depends(verificar_csrf)])
@@ -114,3 +128,73 @@ def confirmar(request: Request, reserva_id: int, admin: Usuario = Depends(requie
 def cancelar(request: Request, reserva_id: int, admin: Usuario = Depends(requiere_admin)):
     return _ejecutar(request, lambda: reserva_service.cancelar_reserva(admin, reserva_id),
                      "Reserva cancelada.", "/admin/reservas")
+
+
+# ---------- carta: categorías y productos ----------
+@router.get("/carta")
+def carta(request: Request, admin: Usuario = Depends(requiere_admin)):
+    rest = _restaurante(admin)
+    return renderizar(request, "admin/carta.html", restaurante=rest,
+                      secciones=carta_service.carta(rest.id, solo_disponibles=False),
+                      categorias=carta_service.categorias(rest.id))
+
+
+@router.post("/carta/categorias", dependencies=[Depends(verificar_csrf)])
+def crear_categoria(request: Request, nombre: str = Form(""), orden: str = Form("0"),
+                    admin: Usuario = Depends(requiere_admin)):
+    rest = _restaurante(admin)
+    return _ejecutar(request, lambda: carta_service.crear_categoria(admin, rest.id, nombre, entero(orden, "orden")),
+                     "Categoría creada.", "/admin/carta")
+
+
+@router.post("/carta/categorias/{categoria_id}/editar", dependencies=[Depends(verificar_csrf)])
+def editar_categoria(request: Request, categoria_id: int, nombre: str = Form(""), orden: str = Form("0"),
+                     admin: Usuario = Depends(requiere_admin)):
+    return _ejecutar(request, lambda: carta_service.actualizar_categoria(admin, categoria_id, nombre, entero(orden, "orden")),
+                     "Categoría actualizada.", "/admin/carta")
+
+
+@router.post("/carta/categorias/{categoria_id}/eliminar", dependencies=[Depends(verificar_csrf)])
+def eliminar_categoria(request: Request, categoria_id: int, admin: Usuario = Depends(requiere_admin)):
+    return _ejecutar(request, lambda: carta_service.eliminar_categoria(admin, categoria_id),
+                     "Categoría eliminada.", "/admin/carta")
+
+
+def _imagen_subida(archivo: UploadFile | None) -> str | None:
+    """Lee (con tope de tamaño) y valida la imagen; devuelve el nombre aleatorio guardado o None si no se envió."""
+    if archivo is None or not archivo.filename:
+        return None
+    return guardar_imagen(archivo.file.read(MAX_BYTES + 1))
+
+
+@router.post("/carta/productos", dependencies=[Depends(verificar_csrf)])
+def crear_producto(request: Request, categoria_id: str = Form(""), nombre: str = Form(""), descripcion: str = Form(""),
+                   precio_cop: str = Form(""), disponible: str = Form(""), imagen: UploadFile | None = File(None),
+                   admin: Usuario = Depends(requiere_admin)):
+    rest = _restaurante(admin)
+    def accion():
+        carta_service.crear_producto(admin, rest.id, entero(categoria_id, "categoría"), nombre, descripcion,
+                                     entero(precio_cop, "precio"), _imagen_subida(imagen) or "", bool(disponible))
+    return _ejecutar(request, accion, "Producto creado.", "/admin/carta")
+
+
+@router.post("/carta/productos/{producto_id}/editar", dependencies=[Depends(verificar_csrf)])
+def editar_producto(request: Request, producto_id: int, categoria_id: str = Form(""), nombre: str = Form(""),
+                    descripcion: str = Form(""), precio_cop: str = Form(""), disponible: str = Form(""),
+                    imagen: UploadFile | None = File(None), admin: Usuario = Depends(requiere_admin)):
+    def accion():
+        carta_service.actualizar_producto(admin, producto_id, entero(categoria_id, "categoría"), nombre, descripcion,
+                                          entero(precio_cop, "precio"), _imagen_subida(imagen), bool(disponible))
+    return _ejecutar(request, accion, "Producto actualizado.", "/admin/carta")
+
+
+@router.post("/carta/productos/{producto_id}/disponibilidad", dependencies=[Depends(verificar_csrf)])
+def alternar_producto(request: Request, producto_id: int, admin: Usuario = Depends(requiere_admin)):
+    return _ejecutar(request, lambda: carta_service.alternar_disponibilidad(admin, producto_id),
+                     "Disponibilidad actualizada.", "/admin/carta")
+
+
+@router.post("/carta/productos/{producto_id}/eliminar", dependencies=[Depends(verificar_csrf)])
+def eliminar_producto(request: Request, producto_id: int, admin: Usuario = Depends(requiere_admin)):
+    return _ejecutar(request, lambda: carta_service.eliminar_producto(admin, producto_id),
+                     "Producto eliminado.", "/admin/carta")

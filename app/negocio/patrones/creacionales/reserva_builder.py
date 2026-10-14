@@ -5,8 +5,8 @@ from datetime import date, datetime, time
 from typing import Callable
 
 from app import config
-from app.datos.dao import HorarioDAO, MesaDAO, ReservaDAO
-from app.datos.modelos import Reserva
+from app.datos.dao import HorarioDAO, MesaDAO, ProductoDAO, ReservaDAO
+from app.datos.modelos import Reserva, ReservaItem
 from app.negocio.excepciones import ReglaNegocioError
 
 
@@ -29,8 +29,10 @@ class ReservaBuilder:
     """
 
     def __init__(self, mesa_dao: MesaDAO, horario_dao: HorarioDAO, reserva_dao: ReservaDAO,
-                 ahora: Callable[[], datetime] = datetime.now) -> None:
+                 ahora: Callable[[], datetime] = datetime.now, producto_dao: ProductoDAO | None = None) -> None:
         self._mesa_dao, self._horario_dao, self._reserva_dao, self._ahora = mesa_dao, horario_dao, reserva_dao, ahora
+        self._producto_dao = producto_dao
+        self._pedido: list[tuple[int, int]] = []
         self._usuario_id: int | None = None
         self._restaurante_id: int | None = None
         self._fecha: date | str | None = None
@@ -66,6 +68,11 @@ class ReservaBuilder:
 
     def con_notas(self, notas: str) -> "ReservaBuilder":
         self._notas = (notas or "").strip()[:300]
+        return self
+
+    def con_items(self, items: list[tuple[int, int]] | None) -> "ReservaBuilder":
+        """Pre-pedido: lista de (producto_id, cantidad). Los precios se leen de la BD en `build()`."""
+        self._pedido = list(items or [])
         return self
 
     # --- construcción ---
@@ -112,10 +119,35 @@ class ReservaBuilder:
             if hay_solape(existente.hora, hora):
                 raise ReglaNegocioError("La mesa ya está reservada en ese horario.")
 
+        # Pre-pedido: productos del mismo restaurante, disponibles; el precio sale de la BD, nunca del navegador
+        items = self._construir_items()
+
         return Reserva(id=None, usuario_id=self._usuario_id, restaurante_id=self._restaurante_id,
                        mesa_id=mesa.id, fecha=fecha.isoformat(), hora=hora, num_personas=self._personas,
                        estado="PENDIENTE", notas=self._notas,
-                       creado_en=self._ahora().isoformat(timespec="seconds"))
+                       creado_en=self._ahora().isoformat(timespec="seconds"), items=items)
+
+    def _construir_items(self) -> list[ReservaItem]:
+        if not self._pedido:
+            return []
+        if self._producto_dao is None:
+            raise ReglaNegocioError("No se puede validar el pre-pedido.")
+        acumulado: dict[int, int] = {}
+        for producto_id, cantidad in self._pedido:
+            if not isinstance(cantidad, int) or not 1 <= cantidad <= 20:
+                raise ReglaNegocioError("La cantidad de cada plato debe estar entre 1 y 20.")
+            acumulado[producto_id] = acumulado.get(producto_id, 0) + cantidad
+        if len(acumulado) > 30 or any(c > 20 for c in acumulado.values()):
+            raise ReglaNegocioError("El pre-pedido es demasiado grande.")
+        items = []
+        for producto_id, cantidad in acumulado.items():
+            producto = self._producto_dao.obtener_por_id(producto_id)
+            if producto is None or producto.restaurante_id != self._restaurante_id:
+                raise ReglaNegocioError("Hay un producto que no pertenece a este restaurante.")
+            if not producto.disponible:
+                raise ReglaNegocioError(f"«{producto.nombre}» no está disponible.")
+            items.append(ReservaItem(None, None, producto.id, cantidad, producto.precio_cop))
+        return items
 
 
 class ReservaDirector:

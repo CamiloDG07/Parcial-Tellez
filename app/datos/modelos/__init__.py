@@ -1,7 +1,7 @@
 """Modelos del dominio (dataclasses). Producto de las fábricas y los builders."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -86,3 +86,41 @@ class Reserva:
     estado: str = "PENDIENTE"
     notas: str = ""
     creado_en: str = ""
+    items: list["ReservaItem"] = field(default_factory=list)   # pre-pedido (no es columna de `reserva`)
+
+    @property
+    def total_cop(self) -> int:
+        return sum(i.subtotal_cop for i in self.items)
+
+
+@dataclass
+class Categoria:
+    id: int | None
+    restaurante_id: int
+    nombre: str
+    orden: int = 0
+
+
+@dataclass
+class Producto:
+    id: int | None
+    restaurante_id: int
+    categoria_id: int
+    nombre: str
+    descripcion: str
+    precio_cop: int          # pesos colombianos enteros
+    imagen: str = ""
+    disponible: bool = True
+
+
+@dataclass
+class ReservaItem:
+    id: int | None
+    reserva_id: int | None
+    producto_id: int
+    cantidad: int
+    precio_unitario_cop: int   # precio congelado al reservar
+
+    @property
+    def subtotal_cop(self) -> int:
+        return self.cantidad * self.precio_unitario_cop

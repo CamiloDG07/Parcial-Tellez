@@ -32,18 +32,39 @@ classDiagram
         +listar_por_restaurante(restaurante_id, fecha, estado) list~Reserva~
         +listar_activas_por_mesa_y_fecha(mesa_id, fecha) list~Reserva~
         +listar_activas_por_restaurante_y_fecha(restaurante_id, fecha) list~Reserva~
+        +insertar_con_items(reserva) int
         +cambiar_estado(reserva_id, estado)
+        +contar_por_dia(restaurante_id, desde, hasta) dict
+    }
+    class CategoriaDAO {
+        +listar_por_restaurante(restaurante_id) list~Categoria~
+        +obtener_por_nombre(restaurante_id, nombre) Categoria
+    }
+    class ProductoDAO {
+        +listar_por_restaurante(restaurante_id, solo_disponibles) list~Producto~
+        +contar_por_categoria(categoria_id) int
+    }
+    class ReservaItemDAO {
+        +listar_por_reserva(reserva_id) list~ReservaItem~
+        +ingresos_estimados(restaurante_id, desde_fecha) int
+        +top_productos(restaurante_id, limite) list
     }
     BaseDAO <|-- UsuarioDAO
     BaseDAO <|-- RestauranteDAO
     BaseDAO <|-- MesaDAO
     BaseDAO <|-- HorarioDAO
     BaseDAO <|-- ReservaDAO
+    BaseDAO <|-- CategoriaDAO
+    BaseDAO <|-- ProductoDAO
+    BaseDAO <|-- ReservaItemDAO
     UsuarioDAO ..> Usuario : maneja (vía fábrica inyectada)
     RestauranteDAO ..> Restaurante
     MesaDAO ..> Mesa
     HorarioDAO ..> Horario
     ReservaDAO ..> Reserva
+    CategoriaDAO ..> Categoria
+    ProductoDAO ..> Producto
+    ReservaItemDAO ..> ReservaItem
     BaseDAO ..> ConexionBD : usa sesion()
     class Usuario { +permisos() frozenset +ruta_inicio() str }
     class Cliente

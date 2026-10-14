@@ -4,15 +4,53 @@
 <section class="contenedor">
   <p class="etiqueta">CAM 05 — SALA DE CONTROL</p>
   <h1 class="titular">PANEL · {{ restaurante.nombre }}</h1>
+
   <div class="kpis">
-    <div class="kpi"><span class="kpi-num">{{ resumen.hoy }}</span><span>Reservas de hoy</span></div>
-    <div class="kpi"><span class="kpi-num">{{ resumen.pendientes }}</span><span>Pendientes de confirmar</span></div>
-    <div class="kpi"><span class="kpi-num">{{ resumen.proximas }}</span><span>Próximas</span></div>
-    <div class="kpi"><span class="kpi-num">{{ resumen.mesas }}</span><span>Mesas</span></div>
+    <div class="kpi"><span class="kpi-num" data-contar="{{ datos.reservas_hoy }}">{{ datos.reservas_hoy }}</span><span>Reservas de hoy</span></div>
+    <div class="kpi"><span class="kpi-num" data-contar="{{ datos.proximas }}">{{ datos.proximas }}</span><span>Próximas (desde hoy)</span></div>
+    <div class="kpi"><span class="kpi-num" data-contar="{{ datos.ocupacion_pct }}" data-sufijo="%">{{ datos.ocupacion_pct }}%</span><span>Ocupación de hoy</span></div>
+    <div class="kpi"><span class="kpi-num kpi-cop" data-contar="{{ datos.ingresos_cop }}" data-formato="cop">{{ datos.ingresos_cop|cop }}</span><span>Ingresos estimados del pre-pedido</span></div>
   </div>
+
+  <div class="rejilla-dos">
+    <figure class="panel grafico">
+      <figcaption class="subtitulo">RESERVAS · ÚLTIMOS 14 DÍAS</figcaption>
+      {% set serie = datos.serie_14d %}
+      <svg viewBox="0 0 560 220" role="img" aria-label="Gráfico de barras: reservas por día, últimos 14 días" class="barras-svg">
+        <line x1="30" y1="180" x2="550" y2="180" stroke="#3a2a58"/>
+        {% for d in serie %}
+          {% set h = (d.pct * 1.4)|round|int %}
+          <g>
+            <title>{{ d.fecha }}: {{ d.n }} reserva(s)</title>
+            <rect class="barra-svg" x="{{ 36 + loop.index0 * 37 }}" y="{{ 180 - h }}" width="26" height="{{ h }}" rx="2" style="--i: {{ loop.index0 }}"/>
+            <text x="{{ 49 + loop.index0 * 37 }}" y="{{ 172 - h }}" text-anchor="middle" class="barra-n">{{ d.n if d.n else '' }}</text>
+            <text x="{{ 49 + loop.index0 * 37 }}" y="198" text-anchor="middle" class="barra-f">{{ d.fecha[8:] }}</text>
+          </g>
+        {% endfor %}
+      </svg>
+      <p class="ayuda">Reservas no canceladas por día (el número bajo cada barra es el día del mes).</p>
+    </figure>
+
+    <figure class="panel grafico">
+      <figcaption class="subtitulo">PRODUCTOS MÁS PEDIDOS</figcaption>
+      {% if top %}
+      <ol class="top-lista">
+        {% for t in top %}
+        <li>
+          <span class="top-nombre">{{ t.nombre }}</span>
+          <span class="top-barra" role="img" aria-label="{{ t.n }} unidades"><i style="--pct: {{ t.pct }}%"></i></span>
+          <span class="top-n">{{ t.n }}</span>
+        </li>
+        {% endfor %}
+      </ol>
+      {% else %}<p class="vacio">Aún no hay pre-pedidos.</p>{% endif %}
+    </figure>
+  </div>
+
   <div class="acciones">
-    <a class="btn btn-rojo" href="/admin/reservas">GESTIONAR RESERVAS</a>
-    <a class="btn btn-claro" href="/admin/mesas">MESAS</a>
+    <a class="btn btn-rojo" href="/admin/reservas">GESTIONAR RESERVAS{% if datos.pendientes %} ({{ datos.pendientes }} PENDIENTES){% endif %}</a>
+    <a class="btn btn-claro" href="/admin/carta">CARTA</a>
+    <a class="btn btn-claro" href="/admin/mesas">MESAS ({{ mesas }})</a>
     <a class="btn btn-claro" href="/admin/horarios">HORARIOS</a>
   </div>
 </section>

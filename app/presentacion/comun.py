@@ -19,6 +19,25 @@ plantillas = Jinja2Templates(directory=str(DIRECTORIO / "templates"))   # autoes
 plantillas.env.globals.update(BRAND_NAME=config.BRAND_NAME, DIAS_SEMANA=config.DIAS_SEMANA)
 
 
+def _cop(valor: int) -> str:
+    """Formato de pesos colombianos: 18000 → $18.000 (sin centavos)."""
+    return "$" + f"{int(valor):,}".replace(",", ".")
+
+
+def _url_imagen(nombre: str) -> str:
+    """URL de la foto de un producto: subida por el admin, foto demo o ilustración de reemplazo."""
+    if nombre:
+        if (config.UPLOADS_DIR / nombre).is_file():
+            return f"/static/uploads/{nombre}"
+        if (config.PLATOS_DIR / nombre).is_file():
+            return f"/static/img/platos/{nombre}"
+    return "/static/img/plato-vacio.svg"
+
+
+plantillas.env.filters["cop"] = _cop
+plantillas.env.globals["url_imagen"] = _url_imagen
+
+
 class RedirigirLogin(Exception):
     """Se requiere iniciar sesión."""
 
@@ -67,7 +86,8 @@ def requiere_admin(request: Request) -> Usuario:
 
 
 def avisar(request: Request, mensaje: str, tipo: str = "ok") -> None:
-    request.session.setdefault("flash", []).append({"tipo": tipo, "texto": mensaje})
+    # Se reasigna la lista: Starlette no detecta mutaciones in situ de valores anidados de la sesión.
+    request.session["flash"] = [*request.session.get("flash", []), {"tipo": tipo, "texto": mensaje}]
 
 
 def renderizar(request: Request, plantilla: str, estado: int = 200, **contexto):
@@ -75,11 +95,11 @@ def renderizar(request: Request, plantilla: str, estado: int = 200, **contexto):
     proximas = 0
     if usuario is not None and usuario.rol == "cliente":
         hoy = date.today().isoformat()
-        proximas = sum(1 for f in fachada.mis_reservas(usuario)
-                       if f["reserva"].estado != "CANCELADA" and f["reserva"].fecha >= hoy)
+        proximas = fachada.contar_proximas(usuario, hoy)
     mensajes = request.session.pop("flash", [])
+    carrito = fachada.carrito_ver(request.session) if usuario is not None and usuario.rol == "cliente" else None
     contexto.update(request=request, usuario=usuario, csrf_token=token_csrf(request),
-                    mensajes=mensajes, reservas_proximas=proximas)
+                    mensajes=mensajes, reservas_proximas=proximas, carrito=carrito)
     return plantillas.TemplateResponse(request, plantilla, contexto, status_code=estado)
 
 

@@ -6,7 +6,8 @@ from abc import ABC, abstractmethod
 from typing import Any, Callable, Generic, TypeVar
 
 from app.datos.conexion import ConexionBD
-from app.datos.modelos import Horario, Mesa, Reserva, Restaurante, Usuario
+from app.datos.modelos import (Categoria, Horario, Mesa, Producto, Reserva, ReservaItem,
+                               Restaurante, Usuario)
 
 T = TypeVar("T")
 
@@ -199,6 +200,100 @@ class ReservaDAO(BaseDAO[Reserva]):
             ).fetchall()
         return [self._desde_fila(f) for f in filas]
 
+    def insertar_con_items(self, reserva: Reserva) -> int:
+        """Inserta la reserva y su pre-pedido en UNA transacción (o se guarda todo o nada)."""
+        marcas = ", ".join("?" for _ in self.columnas)
+        with ConexionBD().sesion() as con:
+            cur = con.execute(
+                f"INSERT INTO reserva ({', '.join(self.columnas)}) VALUES ({marcas})", self._valores(reserva))
+            nuevo_id = int(cur.lastrowid)
+            con.executemany(
+                "INSERT INTO reserva_item (reserva_id, producto_id, cantidad, precio_unitario_cop) VALUES (?,?,?,?)",
+                [(nuevo_id, i.producto_id, i.cantidad, i.precio_unitario_cop) for i in reserva.items])
+        return nuevo_id
+
     def cambiar_estado(self, reserva_id: int, estado: str) -> None:
+        """Al cancelar, el pre-pedido de la reserva se elimina en la misma transacción."""
         with ConexionBD().sesion() as con:
             con.execute("UPDATE reserva SET estado = ? WHERE id = ?", (estado, reserva_id))
+            if estado == "CANCELADA":
+                con.execute("DELETE FROM reserva_item WHERE reserva_id = ?", (reserva_id,))
+
+    def contar_por_dia(self, restaurante_id: int, desde: str, hasta: str) -> dict[str, int]:
+        """Reservas no canceladas por fecha en [desde, hasta]."""
+        with ConexionBD().sesion() as con:
+            filas = con.execute(
+                "SELECT fecha, COUNT(*) FROM reserva WHERE restaurante_id = ? AND fecha BETWEEN ? AND ? "
+                "AND estado <> 'CANCELADA' GROUP BY fecha", (restaurante_id, desde, hasta)).fetchall()
+        return {f[0]: f[1] for f in filas}
+
+
+class CategoriaDAO(BaseDAO[Categoria]):
+    tabla = "categoria"
+    columnas = ("restaurante_id", "nombre", "orden")
+
+    def _desde_fila(self, fila: sqlite3.Row) -> Categoria:
+        return Categoria(**dict(fila))
+
+    def listar_por_restaurante(self, restaurante_id: int) -> list[Categoria]:
+        with ConexionBD().sesion() as con:
+            filas = con.execute(
+                "SELECT * FROM categoria WHERE restaurante_id = ? ORDER BY orden, nombre", (restaurante_id,)).fetchall()
+        return [self._desde_fila(f) for f in filas]
+
+    def obtener_por_nombre(self, restaurante_id: int, nombre: str) -> Categoria | None:
+        with ConexionBD().sesion() as con:
+            fila = con.execute("SELECT * FROM categoria WHERE restaurante_id = ? AND nombre = ?",
+                               (restaurante_id, nombre)).fetchone()
+        return self._desde_fila(fila) if fila else None
+
+
+class ProductoDAO(BaseDAO[Producto]):
+    tabla = "producto"
+    columnas = ("restaurante_id", "categoria_id", "nombre", "descripcion", "precio_cop", "imagen", "disponible")
+
+    def _desde_fila(self, fila: sqlite3.Row) -> Producto:
+        datos = dict(fila)
+        datos["disponible"] = bool(datos["disponible"])
+        return Producto(**datos)
+
+    def listar_por_restaurante(self, restaurante_id: int, solo_disponibles: bool = False) -> list[Producto]:
+        sql = "SELECT * FROM producto WHERE restaurante_id = ?"
+        if solo_disponibles:
+            sql += " AND disponible = 1"
+        with ConexionBD().sesion() as con:
+            filas = con.execute(sql + " ORDER BY categoria_id, id", (restaurante_id,)).fetchall()
+        return [self._desde_fila(f) for f in filas]
+
+    def contar_por_categoria(self, categoria_id: int) -> int:
+        with ConexionBD().sesion() as con:
+            return con.execute("SELECT COUNT(*) FROM producto WHERE categoria_id = ?", (categoria_id,)).fetchone()[0]
+
+
+class ReservaItemDAO(BaseDAO[ReservaItem]):
+    tabla = "reserva_item"
+    columnas = ("reserva_id", "producto_id", "cantidad", "precio_unitario_cop")
+
+    def _desde_fila(self, fila: sqlite3.Row) -> ReservaItem:
+        return ReservaItem(**dict(fila))
+
+    def listar_por_reserva(self, reserva_id: int) -> list[ReservaItem]:
+        with ConexionBD().sesion() as con:
+            filas = con.execute("SELECT * FROM reserva_item WHERE reserva_id = ? ORDER BY id", (reserva_id,)).fetchall()
+        return [self._desde_fila(f) for f in filas]
+
+    def ingresos_estimados(self, restaurante_id: int, desde_fecha: str) -> int:
+        """Suma de pre-pedidos de reservas no canceladas desde una fecha."""
+        with ConexionBD().sesion() as con:
+            return con.execute(
+                "SELECT COALESCE(SUM(i.cantidad * i.precio_unitario_cop), 0) FROM reserva_item i "
+                "JOIN reserva r ON r.id = i.reserva_id WHERE r.restaurante_id = ? AND r.fecha >= ? "
+                "AND r.estado <> 'CANCELADA'", (restaurante_id, desde_fecha)).fetchone()[0]
+
+    def top_productos(self, restaurante_id: int, limite: int = 5) -> list[tuple[str, int]]:
+        with ConexionBD().sesion() as con:
+            filas = con.execute(
+                "SELECT p.nombre, SUM(i.cantidad) AS n FROM reserva_item i JOIN producto p ON p.id = i.producto_id "
+                "JOIN reserva r ON r.id = i.reserva_id WHERE r.restaurante_id = ? AND r.estado <> 'CANCELADA' "
+                "GROUP BY p.id ORDER BY n DESC, p.nombre LIMIT ?", (restaurante_id, limite)).fetchall()
+        return [(f[0], f[1]) for f in filas]

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block titulo %}Carta{% endblock %}
+{% block contenido %}
+<section class="contenedor">
+  <p class="etiqueta">CAM 05 — {{ restaurante.nombre|upper }}</p>
+  <h1 class="titular">CARTA</h1>
+
+  <div class="rejilla-dos">
+    <form method="post" action="/admin/carta/categorias" class="panel filtros" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <div><label for="cat-nombre">Nueva categoría</label><input id="cat-nombre" name="nombre" maxlength="40" required></div>
+      <div><label for="cat-orden">Orden</label><input id="cat-orden" name="orden" type="number" value="{{ categorias|length + 1 }}"></div>
+      <button class="btn btn-dorado" type="submit">AGREGAR CATEGORÍA</button>
+    </form>
+
+    <form method="post" action="/admin/carta/productos" enctype="multipart/form-data" class="panel formulario" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <h2 class="subtitulo">Nuevo producto</h2>
+      <label for="p-nombre">Nombre</label><input id="p-nombre" name="nombre" maxlength="80" required>
+      <label for="p-cat">Categoría</label>
+      <select id="p-cat" name="categoria_id" required>
+        {% for c in categorias %}<option value="{{ c.id }}">{{ c.nombre }}</option>{% endfor %}
+      </select>
+      <label for="p-precio">Precio (COP, entero)</label><input id="p-precio" name="precio_cop" type="number" min="0" step="1" required inputmode="numeric">
+      <label for="p-desc">Descripción</label><textarea id="p-desc" name="descripcion" rows="2" maxlength="300"></textarea>
+      <label for="p-img">Imagen (JPG, PNG o WebP · máx. 2 MB)</label>
+      <input id="p-img" name="imagen" type="file" accept="image/jpeg,image/png,image/webp">
+      <label class="check"><input type="checkbox" name="disponible" value="1" checked> Disponible</label>
+      <button class="btn btn-rojo" type="submit">CREAR PRODUCTO</button>
+    </form>
+  </div>
+
+  {% for s in secciones %}
+  <section class="panel admin-cat" aria-labelledby="ac-{{ s.categoria.id }}">
+    <form method="post" action="/admin/carta/categorias/{{ s.categoria.id }}/editar" class="fila-cat" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <h2 class="subtitulo" id="ac-{{ s.categoria.id }}">{{ s.categoria.nombre|upper }}</h2>
+      <label class="solo-lectores" for="cn-{{ s.categoria.id }}">Nombre de la categoría</label>
+      <input id="cn-{{ s.categoria.id }}" name="nombre" value="{{ s.categoria.nombre }}" maxlength="40">
+      <label class="solo-lectores" for="co-{{ s.categoria.id }}">Orden</label>
+      <input id="co-{{ s.categoria.id }}" name="orden" type="number" value="{{ s.categoria.orden }}" class="corto">
+      <button class="btn btn-claro btn-sm" type="submit">GUARDAR</button>
+      <button class="btn btn-fantasma btn-sm" type="submit" formaction="/admin/carta/categorias/{{ s.categoria.id }}/eliminar"
+              data-confirmar="¿Eliminar la categoría {{ s.categoria.nombre }}?">ELIMINAR</button>
+    </form>
+
+    <div class="tabla-envoltura">
+    <table class="tabla">
+      <caption class="solo-lectores">Productos de {{ s.categoria.nombre }}</caption>
+      <thead><tr><th scope="col">Foto</th><th scope="col">Producto</th><th scope="col">Precio</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead>
+      <tbody>
+      {% for p in s.productos %}
+        <tr>
+          <td data-etiqueta="Foto"><img class="miniatura" src="{{ url_imagen(p.imagen) }}" alt="Foto de {{ p.nombre }}" width="64" height="48" loading="lazy"></td>
+          <td data-etiqueta="Producto"><strong>{{ p.nombre }}</strong><br><small>{{ p.descripcion }}</small></td>
+          <td data-etiqueta="Precio">{{ p.precio_cop|cop }}</td>
+          <td data-etiqueta="Estado"><span class="estado {{ 'estado-confirmada' if p.disponible else 'estado-cancelada' }}">{{ 'DISPONIBLE' if p.disponible else 'AGOTADO' }}</span></td>
+          <td data-etiqueta="Acciones" class="acciones">
+            <form method="post" action="/admin/carta/productos/{{ p.id }}/disponibilidad" class="en-linea">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button class="btn btn-claro btn-sm" type="submit">{{ 'AGOTAR' if p.disponible else 'ACTIVAR' }}</button></form>
+            <details class="editar">
+              <summary class="btn btn-fantasma btn-sm">EDITAR</summary>
+              <form method="post" action="/admin/carta/productos/{{ p.id }}/editar" enctype="multipart/form-data" class="formulario" novalidate>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <label for="en-{{ p.id }}">Nombre</label><input id="en-{{ p.id }}" name="nombre" value="{{ p.nombre }}" maxlength="80">
+                <label for="ec-{{ p.id }}">Categoría</label>
+                <select id="ec-{{ p.id }}" name="categoria_id">
+                  {% for c in categorias %}<option value="{{ c.id }}" {% if c.id == p.categoria_id %}selected{% endif %}>{{ c.nombre }}</option>{% endfor %}
+                </select>
+                <label for="ep-{{ p.id }}">Precio (COP)</label><input id="ep-{{ p.id }}" name="precio_cop" type="number" min="0" value="{{ p.precio_cop }}">
+                <label for="ed-{{ p.id }}">Descripción</label><textarea id="ed-{{ p.id }}" name="descripcion" rows="2" maxlength="300">{{ p.descripcion }}</textarea>
+                <label for="ei-{{ p.id }}">Reemplazar imagen</label><input id="ei-{{ p.id }}" name="imagen" type="file" accept="image/jpeg,image/png,image/webp">
+                <label class="check"><input type="checkbox" name="disponible" value="1" {% if p.disponible %}checked{% endif %}> Disponible</label>
+                <div class="acciones">
+                  <button class="btn btn-rojo btn-sm" type="submit">GUARDAR CAMBIOS</button>
+                  <button class="btn btn-fantasma btn-sm" type="submit" formaction="/admin/carta/productos/{{ p.id }}/eliminar"
+                          data-confirmar="¿Eliminar {{ p.nombre }}?">ELIMINAR</button>
+                </div>
+              </form>
+            </details>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5" class="vacio">Sin productos en esta categoría.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </section>
+  {% else %}
+  <p class="vacio">Aún no hay categorías: crea la primera arriba.</p>
+  {% endfor %}
+</section>
+{% endblock %}

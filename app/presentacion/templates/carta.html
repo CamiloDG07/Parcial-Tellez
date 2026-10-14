@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block titulo %}Carta{% endblock %}
+{% block contenido %}
+<section class="contenedor">
+  <p class="etiqueta">CAM 06 — MENÚ</p>
+  <h1 class="titular">LA CARTA</h1>
+
+  <form class="panel filtros" method="get" action="/carta">
+    <div>
+      <label for="carta-rest">Restaurante</label>
+      <select id="carta-rest" name="restaurante_id">
+        {% for r in restaurantes %}
+        <option value="{{ r.id }}" {% if restaurante and restaurante.id == r.id %}selected{% endif %}>{{ r.nombre }} — {{ r.ciudad }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button class="btn btn-claro" type="submit">VER CARTA</button>
+  </form>
+
+  {% if secciones %}
+  <div class="carta-barra">
+    <div class="pestanas" role="tablist" aria-label="Categorías de la carta">
+      <button class="pestana activa" type="button" role="tab" aria-selected="true" data-categoria="todas">TODAS</button>
+      {% for s in secciones %}
+      <button class="pestana" type="button" role="tab" aria-selected="false" data-categoria="c{{ s.categoria.id }}">{{ s.categoria.nombre|upper }}</button>
+      {% endfor %}
+    </div>
+    <div class="buscador">
+      <label class="solo-lectores" for="buscar-plato">Buscar plato</label>
+      <input id="buscar-plato" type="search" placeholder="Buscar plato…" autocomplete="off">
+    </div>
+  </div>
+
+  <div id="carta" data-restaurante="{{ restaurante.id }}" data-cliente="{{ 'si' if usuario and usuario.rol == 'cliente' else 'no' }}">
+  {% for s in secciones %}
+    <section class="carta-seccion" data-categoria="c{{ s.categoria.id }}" aria-labelledby="cat-{{ s.categoria.id }}">
+      <h2 class="subtitulo" id="cat-{{ s.categoria.id }}">{{ s.categoria.nombre|upper }}</h2>
+      <div class="rejilla-platos">
+      {% for p in s.productos %}
+        <article class="plato" data-nombre="{{ (p.nombre ~ ' ' ~ p.descripcion)|lower }}">
+          <div class="plato-foto feed-foto"><img src="{{ url_imagen(p.imagen) }}" alt="Foto de {{ p.nombre }}" loading="lazy" width="320" height="200"></div>
+          <div class="plato-cuerpo">
+            <h3>{{ p.nombre }}</h3>
+            <p class="plato-desc">{{ p.descripcion }}</p>
+            <p class="plato-precio">{{ p.precio_cop|cop }}</p>
+            {% if usuario and usuario.rol == 'cliente' %}
+            <div class="plato-accion">
+              <label class="solo-lectores" for="cant-{{ p.id }}">Cantidad de {{ p.nombre }}</label>
+              <input id="cant-{{ p.id }}" class="cant" type="number" min="1" max="20" value="1" inputmode="numeric">
+              <button class="btn btn-dorado btn-sm" type="button" data-agregar="{{ p.id }}">AGREGAR</button>
+            </div>
+            {% elif not usuario %}
+            <a class="btn btn-fantasma btn-sm" href="/login">INICIA SESIÓN PARA PEDIR</a>
+            {% endif %}
+          </div>
+        </article>
+      {% endfor %}
+      </div>
+    </section>
+  {% endfor %}
+  <p class="vacio" id="carta-sin-resultados" hidden>SIN SEÑAL: ningún plato coincide con la búsqueda.</p>
+  </div>
+  {% else %}
+  <p class="vacio">Este restaurante todavía no publica su carta.</p>
+  {% endif %}
+</section>
+{% endblock %}
+{% block scripts %}<script src="/static/js/carta.js" defer></script>{% endblock %}

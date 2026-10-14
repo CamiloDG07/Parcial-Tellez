@@ -53,3 +53,34 @@ CREATE TABLE IF NOT EXISTS reserva (
 CREATE INDEX IF NOT EXISTS idx_reserva_mesa_fecha ON reserva (mesa_id, fecha);
 CREATE INDEX IF NOT EXISTS idx_reserva_usuario ON reserva (usuario_id);
 CREATE INDEX IF NOT EXISTS idx_reserva_restaurante_fecha ON reserva (restaurante_id, fecha);
+
+-- ===================== Fase 2: carta y pre-pedido (dinero en COP enteros, sin centavos) =====================
+CREATE TABLE IF NOT EXISTS categoria (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    restaurante_id INTEGER NOT NULL REFERENCES restaurante(id) ON DELETE CASCADE,
+    nombre         TEXT NOT NULL,
+    orden          INTEGER NOT NULL DEFAULT 0,
+    UNIQUE (restaurante_id, nombre)
+);
+
+CREATE TABLE IF NOT EXISTS producto (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    restaurante_id INTEGER NOT NULL REFERENCES restaurante(id) ON DELETE CASCADE,
+    categoria_id   INTEGER NOT NULL REFERENCES categoria(id),
+    nombre         TEXT NOT NULL,
+    descripcion    TEXT NOT NULL DEFAULT '',
+    precio_cop     INTEGER NOT NULL CHECK (precio_cop >= 0),
+    imagen         TEXT NOT NULL DEFAULT '',
+    disponible     INTEGER NOT NULL DEFAULT 1 CHECK (disponible IN (0, 1))
+);
+
+CREATE TABLE IF NOT EXISTS reserva_item (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    reserva_id          INTEGER NOT NULL REFERENCES reserva(id) ON DELETE CASCADE,
+    producto_id         INTEGER NOT NULL REFERENCES producto(id),
+    cantidad            INTEGER NOT NULL CHECK (cantidad > 0),
+    precio_unitario_cop INTEGER NOT NULL CHECK (precio_unitario_cop >= 0)
+);
+
+CREATE INDEX IF NOT EXISTS idx_producto_restaurante ON producto (restaurante_id, categoria_id);
+CREATE INDEX IF NOT EXISTS idx_item_reserva ON reserva_item (reserva_id);
