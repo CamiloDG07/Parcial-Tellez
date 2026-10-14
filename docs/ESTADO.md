@@ -2,18 +2,15 @@
 
 ## Fase actual
 - **Fase 1: completa** (tag `fase-1`). Tres capas, DAO, 5 patrones (Singleton, Factory Method, Builder, Facade, Proxy), login por rol, reservas con reglas de negocio, panel admin de mesas/horarios/reservas.
-- **Fase 2: completa** (tag `fase-2`). Registro, carta (`carta_demo.json`, precios `precio_cop` enteros), pre-pedido en sesión, reserva con pre-pedido (`ReservaBuilder.con_items`), CRUD de categorías/productos con subida de imagen validada, KPIs, gráfico de 14 días, top de productos, tabla de reservas con filtros/búsqueda/paginación, fotos de platos con créditos.
-- **Fase 3: parcial, SIN tag.** Escrito pero con verificación incompleta: animaciones (`static/js/efectos.js` + sección "Fase 3" de `tema.css`), asistente de reserva por pasos (`reservar.js`, `reservar.html`), modal de confirmación propio, esqueletos de carga, contadores y barras animadas.
-- **Fase 4 (Decorator `PrecioDecorator`): no iniciada.**
+- **Fase 2: completa** (tag `fase-2`). Registro, carta (`carta_demo.json`, `precio_cop` entero), pre-pedido en sesión, reserva con pre-pedido, CRUD de carta con subida de imagen validada, KPIs, gráfico de 14 días, top de productos, tabla de reservas con filtros/búsqueda/paginación, fotos con créditos.
+- **Fase 3: completa** (tag `fase-3`). Animaciones, asistente de reserva por pasos, modal propio, esqueletos, contadores y barras animadas; verificadas con `tools/e2e_capturas.py`.
+- **Fase 4 (Decorator `PrecioDecorator`): no iniciada** (opcional).
 
 ## Falta (por prioridad)
-1. Terminar de verificar la Fase 3 en navegador: relanzar `tools/e2e_capturas.py` (ver abajo). La corrida anterior llegó a generar las 22 capturas y falló solo en el último bloque (FPS/destellos) por un error del script, ya corregido pero **no reejecutado**.
-2. Revisar a ojo las capturas nuevas del asistente por pasos (`docs/capturas/09_…` a `12_…`) y el modal (`22_…`); no se han mirado.
-3. Probar el asistente con JavaScript deshabilitado y con `prefers-reduced-motion` (el script lo comprueba, pero no se ejecutó con éxito).
-4. Medir FPS (el script lo hace; el resultado aún no existe) y, si pasa, cerrar con commit y tag `fase-3`.
-5. `docs/guion_video.md` (no escrito) y PNG de los diagramas Mermaid (no intentado).
-6. Plantilla externa de restaurante: **no se usó**; el CSS es propio (decisión no consultada).
-7. Opcional: Fase 4.
+1. `docs/guion_video.md` (no escrito) y PNG de los diagramas Mermaid (no intentado).
+2. Plantilla externa de restaurante: **no se usó**; el CSS es propio (decisión no consultada con el usuario).
+3. Opcional: Fase 4.
+4. Opcional: conservar el filtro `q` al confirmar/cancelar desde `/admin/reservas` (hoy la redirección lo pierde).
 
 ## Cómo arrancar
 ```bash
@@ -39,23 +36,25 @@ Las fotos de platos se regeneran con `python tools/descargar_fotos.py` (requiere
 | invitados con historial (seed) | `invitado1@demo.com` … `invitado3@demo.com` | `Invitado123!` |
 
 ## Archivos a medias
-- `tools/e2e_capturas.py`: último bloque (destellos y FPS) corregido pero sin reejecutar.
-- Ningún archivo de la aplicación está a medias; el proyecto arranca y las pruebas pasan.
+- Ninguno. El proyecto arranca y las pruebas pasan.
 
 ## Verificado ejecutándolo
-- `pytest -q`: **78 pruebas pasan, 0 fallan** (reglas de negocio, patrones, web, Fase 2), corrida al pausar.
-- Recorrido Playwright de la Fase 1 (cliente y admin: login, reserva con mesa, doble reserva rechazada, cliente fuera de `/admin`, confirmación): pasó; sin etiquetas HTML rotas ni scroll horizontal a 375 y 1440 px; consola sin errores propios.
-- Recorrido Playwright de la Fase 2 (registro con error y éxito, carta con pestañas y búsqueda, pre-pedido, reserva con pre-pedido, total en "Mis reservas", panel con ingresos y 14 barras): pasó; consola solo con el 400 provocado en el registro.
-- Tras añadir la Fase 3, la corrida de `tools/e2e_capturas.py` completó login, registro, carta, cajón del pre-pedido, los 5 pasos del asistente, doble reserva y reserva a las 03:00 rechazadas, vistas de admin, confirmación y modal, y generó 44 capturas (22 vistas × 2 anchos).
-- Las 26 fotos pesan < 250 KB y tienen crédito (prueba `test_cada_plato_tiene_foto_y_credito`); revisadas a ojo en hoja de contacto.
-- Diagramas: los nombres de métodos de `diagrama_dao.mmd` y `diagrama_control_patrones.mmd` existen en el código; las 8 tablas de `schema.sql` están en `modelo_relacional.mmd`.
+- `pytest -q`: **78 pruebas pasan, 0 fallan** (reglas de negocio, patrones, web, Fase 2).
+- `tools/e2e_capturas.py` (Playwright/Chromium, base recién sembrada) completo, sin errores: login, registro con error y éxito, carta (pestañas, búsqueda, agregar), cajón del pre-pedido, los 5 pasos del asistente (con error de validación de hora), reserva con pre-pedido ($56.000), doble reserva y reserva a las 03:00 rechazadas, cliente en `/admin` (403), vistas de admin, confirmación de reserva y modal de cancelación. 44 capturas en `docs/capturas/` (22 vistas a 1440 y 375 px).
+- HTML sin etiquetas rotas ni atributos pegados y sin scroll horizontal a 375/1440 px en las páginas revisadas; consola sin errores propios (solo los 4xx provocados a propósito).
+- `prefers-reduced-motion: reduce`: 0 platos ocultos, 0 animaciones infinitas activas, el punto REC sin animación.
+- Destellos: 6 animaciones infinitas, la más rápida de 2000 ms (el límite exige >= 333 ms).
+- Rendimiento: **56 fps de promedio, p95 de 33 ms** (Chromium headless, render por software, scroll + vuelo al carrito + cajón). Antes del ajuste (se quitó `mix-blend-mode` y se redujo la capa de ruido `.crt-ruido`) el mismo escenario daba 31 fps.
+- Se revisaron a ojo las capturas del asistente (paso mesa a 1440 px, error de hora a 375 px) y del modal.
+- Sin JavaScript: la carta y los 5 paneles se ven completos, pero no cargan las horas, así que **no se puede reservar sin JS**.
+- Las 26 fotos pesan < 250 KB y tienen crédito (prueba automática); diagramas coherentes con el código (nombres de métodos y las 8 tablas).
 
 ## No verificado
-- Resultado del último bloque del E2E: destellos por segundo, FPS, `prefers-reduced-motion` y comportamiento sin JavaScript.
-- Que las capturas del asistente por pasos, el modal y la animación "vuela al carrito" se vean bien (no las he mirado; la animación solo se ejecutó, no se observó).
+- FPS en una GPU real o en un portátil medio: solo se midió en Chromium headless con render por software.
+- La animación "vuela al carrito" se ejecuta, pero no se observó cuadro a cuadro.
 - Que los diagramas Mermaid rendericen (no se pasaron por el renderizador).
+- Capturas de pasos 4 y 5 del asistente y de la carta a 375 px: generadas, no revisadas a ojo una por una.
 - Concurrencia: el cerrojo contra doble reserva solo protege un proceso; no se probó con varios workers.
 - Sin limitación de intentos de login; cookie de sesión sin `Secure` (desarrollo en HTTP).
-- La foto de "Semifreddo al limón" es de un semifreddo de avellana (aproximada).
-- Las fotos vienen de Wikimedia Commons, no de Unsplash/Pexels/Pixabay.
+- La foto de "Semifreddo al limón" es de un semifreddo de avellana (aproximada). Las fotos vienen de Wikimedia Commons, no de Unsplash/Pexels/Pixabay.
 - Rúbrica del profesor: no consultada.

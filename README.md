@@ -41,6 +41,16 @@ app/
 - **Administrador**: CRUD de categorías y productos con subida de imagen (solo JPG/PNG/WebP detectados por su cabecera, máx. 2 MB, nombre aleatorio), activar/agotar productos, panel con KPIs, gráfico de 14 días y top de productos (SVG/CSS propios) y tabla de reservas con filtros, búsqueda y paginación.
 - **Ocupación %** = (reservas activas de hoy × 120 min) / (mesas activas × minutos abiertos hoy). **Ingresos estimados** = suma de pre-pedidos de reservas no canceladas desde hoy.
 
+### Fase 3 (animaciones y pulido)
+
+Todo en CSS y JavaScript vanilla (`static/js/efectos.js`, sección "Fase 3" de `static/css/tema.css`), sin librerías:
+aparición al hacer scroll (`IntersectionObserver`), entrada de página, asistente de reserva por pasos con transición
+(fecha → hora → mesa → pre-pedido → confirmar), animación "vuela al carrito" (Web Animations API) con insignia que rebota,
+pulso suave en las mesas libres, esqueletos de carga, toasts, modal de confirmación propio (`<dialog>`), cajón del pre-pedido,
+contadores animados y barras que crecen en el panel. Con `prefers-reduced-motion: reduce` no se anima nada. La animación
+infinita más rápida dura 2 s (límite de seguridad: 3 destellos/s). El formulario de reserva necesita JavaScript para
+cargar las horas disponibles.
+
 Los controladores del cliente solo hablan con `ReservaFacade`; la fachada recibe `ReservaServiceProxy`, nunca el servicio real. Un DAO no importa negocio: `UsuarioDAO` recibe la fábrica de usuarios por inyección.
 
 ## Patrones de diseño
