@@ -11,6 +11,8 @@
   let datos = null;                        // última respuesta de /api/disponibilidad
   let peticion = 0;                        // evita que una respuesta lenta pise a una más nueva
 
+  const pasos = [...form.querySelectorAll('.paso')];
+  let pasoActual = 0;
   const error = (id, texto) => { $(id).textContent = texto || ''; };
   const horaDe = (franja) => franja.hora;
 
@@ -23,6 +25,7 @@
 
     const mia = ++peticion;
     estado.textContent = 'Cargando disponibilidad…';
+    esqueletos();
     chips.setAttribute('aria-busy', 'true');
     try {
       const url = `/api/disponibilidad?restaurante_id=${encodeURIComponent(restauranteId)}` +
@@ -44,6 +47,12 @@
     pintarHoras();
     pintarPlano();
     progreso();
+  }
+
+  function esqueletos() {
+    // Marcadores de carga (skeletons) mientras llega la respuesta.
+    chips.replaceChildren(...Array.from({ length: 8 }, () => Object.assign(document.createElement('span'), { className: 'chip chip-esqueleto' })));
+    plano.replaceChildren(...Array.from({ length: 6 }, () => Object.assign(document.createElement('span'), { className: 'mesa mesa-esqueleto' })));
   }
 
   function pintarHoras() {
@@ -110,12 +119,7 @@
   }
 
   function progreso() {
-    let pct = 20;                                         // restaurante elegido
-    if (campoFecha.value && campoPersonas.value) pct += 20;
-    if (campoHora.value) pct += 25;
-    if (campoMesa.value || auto.checked) pct += 25;
-    if (datos && datos.abierto) pct += 10;
-    pct = Math.min(pct, 100);
+    const pct = Math.round(((pasoActual + 1) / pasos.length) * 100);   // barra POWER = avance del asistente
     $('power-relleno').style.width = pct + '%';
     $('power-pct').textContent = pct + '%';
     $('power').setAttribute('aria-valuenow', String(pct));
@@ -142,9 +146,63 @@
     if (!ok) {
       ev.preventDefault();
       const primero = form.querySelector('.error-campo:not(:empty)');
-      if (primero) primero.scrollIntoView({ block: 'center' });
+      if (primero) {
+        irAPaso(pasos.indexOf(primero.closest('.paso')));
+        primero.scrollIntoView({ block: 'center' });
+      }
     }
   });
+
+
+  // ---- Asistente por pasos con transición (si no hay JavaScript, se ve el formulario completo) ----
+  const indicador = $('pasos');
+  const nav = document.createElement('div');
+  nav.className = 'paso-nav';
+  nav.innerHTML = '<button type="button" class="btn btn-fantasma" id="paso-ant">← ANTERIOR</button>' +
+                  '<button type="button" class="btn btn-dorado" id="paso-sig">SIGUIENTE →</button>';
+  form.classList.add('con-pasos');
+  form.appendChild(nav);
+  for (const p of pasos) {
+    const li = document.createElement('li');
+    li.textContent = p.dataset.titulo;
+    indicador.appendChild(li);
+  }
+  indicador.hidden = false;
+
+  function valido(i) {
+    for (const id of ['err-fecha', 'err-personas', 'err-hora', 'err-mesa']) error(id);
+    const p = parseInt(campoPersonas.value, 10);
+    if (i === 0) {
+      let ok = true;
+      if (!campoFecha.value || campoFecha.value < form.dataset.hoy) { error('err-fecha', 'Elige una fecha futura.'); ok = false; }
+      if (!(p >= 1 && p <= 30)) { error('err-personas', 'Indica entre 1 y 30 personas.'); ok = false; }
+      return ok;
+    }
+    if (i === 1 && !campoHora.value) { error('err-hora', 'Elige una hora disponible.'); return false; }
+    if (i === 2 && !auto.checked && !campoMesa.value) { error('err-mesa', 'Elige una mesa o activa la asignación automática.'); return false; }
+    return true;
+  }
+
+  function irAPaso(nuevo) {
+    const dir = nuevo >= pasoActual ? 1 : -1;
+    pasos.forEach((p, i) => { p.hidden = i !== nuevo; });
+    const entrante = pasos[nuevo];
+    if (!window.reducirMovimiento && entrante.animate && nuevo !== pasoActual) {
+      entrante.animate([{ opacity: 0, transform: `translateX(${28 * dir}px)` }, { opacity: 1, transform: 'none' }],
+                       { duration: 320, easing: 'ease-out' });
+    }
+    pasoActual = nuevo;
+    [...indicador.children].forEach((li, i) => {
+      li.classList.toggle('hecho', i < nuevo);
+      if (i === nuevo) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+    });
+    $('paso-ant').hidden = nuevo === 0;
+    $('paso-sig').hidden = nuevo === pasos.length - 1;
+    progreso();
+  }
+  $('paso-sig').addEventListener('click', () => { if (valido(pasoActual)) irAPaso(pasoActual + 1); });
+  $('paso-ant').addEventListener('click', () => irAPaso(pasoActual - 1));
+  irAPaso(0);
 
   campoHora.value = form.dataset.horaInicial || '';
   campoMesa.value = form.dataset.mesaInicial || '';

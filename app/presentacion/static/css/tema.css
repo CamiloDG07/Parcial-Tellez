@@ -330,3 +330,66 @@ details summary { cursor: pointer; }
 .top-n { font-family: var(--f-monitor); font-size: 1.3rem; color: var(--fosforo); text-align: right; }
 
 @media (max-width: 760px) { .rejilla-dos { grid-template-columns: 1fr; } .top-lista li { grid-template-columns: 1fr 2.2rem; } .top-barra { grid-column: 1 / -1; order: 3; } }
+
+
+/* ==================== Fase 3: animaciones y pulido ==================== */
+/* entrada de página */
+main { animation: entra-pagina .5s ease-out both; }
+@keyframes entra-pagina { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+/* aparición al hacer scroll: las clases las añade efectos.js (sin JS todo es visible) */
+.revela { opacity: 0; transform: translateY(18px); transition: opacity .5s ease var(--retraso, 0ms), transform .5s ease var(--retraso, 0ms); }
+.revela.visible { opacity: 1; transform: none; }
+.tarjeta.revela.visible:hover { transform: translateY(-4px); }
+
+/* elevación y brillo en hover */
+.tarjeta, .kpi { transition: transform .2s, box-shadow .2s, border-color .2s, opacity .5s ease var(--retraso, 0ms); }
+.tarjeta:hover { box-shadow: 0 8px 28px rgba(123,63,176,.35), 0 0 0 1px rgba(57,255,126,.35); }
+.kpi:hover { border-color: var(--fosforo); box-shadow: 0 0 18px rgba(57,255,126,.2); }
+
+/* asistente de reserva */
+.reserva-rejilla.con-pasos { display: block; }
+.con-pasos .paso[hidden] { display: none; }
+.pasos { list-style: none; display: flex; gap: .4rem; padding: 0; margin: 0 0 1rem; counter-reset: paso; flex-wrap: wrap; }
+.pasos li { counter-increment: paso; flex: 1 1 110px; font-family: var(--f-monitor); font-size: 1.15rem; color: var(--texto-suave);
+  border-top: 4px solid var(--borde); padding-top: .3rem; transition: color .3s, border-color .3s; }
+.pasos li::before { content: counter(paso) ". "; }
+.pasos li.hecho { color: var(--fosforo); border-top-color: var(--fosforo); }
+.pasos li[aria-current="step"] { color: var(--dorado); border-top-color: var(--dorado); }
+.paso-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 1rem; }
+.paso-nav [hidden] { display: none; }
+.paso-nav #paso-sig { margin-left: auto; }
+
+/* mesas libres con pulso suave (2,8 s por ciclo) y skeletons */
+.mesa-libre:not(:disabled) { animation: pulso-mesa 2.8s ease-in-out infinite; }
+@keyframes pulso-mesa { 0%, 100% { box-shadow: 0 0 0 0 rgba(57,255,126,0); } 50% { box-shadow: 0 0 14px 2px rgba(57,255,126,.45); } }
+.chip-esqueleto, .mesa-esqueleto, .plato-foto.cargando { background: linear-gradient(100deg, #151024 30%, #231a3a 50%, #151024 70%) 0 0 / 200% 100%; border-color: #231a3a; animation: brillo-carga 1.4s linear infinite; }
+.chip-esqueleto { display: inline-block; width: 4.4rem; height: 44px; color: transparent; }
+.mesa-esqueleto { border-style: solid; }
+@keyframes brillo-carga { to { background-position: -200% 0; } }
+
+/* toasts con entrada */
+.toast { animation: toast-entra .3s ease-out both; }
+@keyframes toast-entra { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+/* modal de confirmación */
+.modal { background: var(--fondo-2); color: var(--texto); border: 2px solid var(--purpura); border-radius: 10px; padding: 1.4rem; width: min(420px, 100% - 2rem); }
+.modal::backdrop { background: rgba(0,0,0,.7); }
+.modal[open] { animation: modal-entra .25s ease-out both; }
+@keyframes modal-entra { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
+.modal .acciones { justify-content: flex-end; }
+
+/* gráfico: las barras crecen al cargar */
+.barra-svg { transform-box: fill-box; transform-origin: bottom; animation: crece-barra .8s ease-out both; animation-delay: calc(var(--i, 0) * 45ms); }
+@keyframes crece-barra { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.top-barra i { animation: crece-ancho .9s ease-out both; }
+@keyframes crece-ancho { from { width: 0; } to { width: var(--pct); } }
+
+/* foto "feed de cámara" con ruido estático que cede al pasar el ratón */
+.plato-foto img { transition: filter .35s, transform .5s; }
+.plato:hover .plato-foto img { transform: scale(1.05); }
+
+@media (prefers-reduced-motion: reduce) {
+  .revela { opacity: 1 !important; transform: none !important; }
+  .mesa-libre:not(:disabled), .barra-svg, .top-barra i, main, .toast, .modal[open] { animation: none !important; }
+}

@@ -7,7 +7,7 @@
 
   <form class="panel filtros" method="get" action="/reservar">
     <div>
-      <label for="restaurante-sel">1 · Restaurante</label>
+      <label for="restaurante-sel">Restaurante</label>
       <select id="restaurante-sel" name="restaurante_id" required>
         <option value="" {% if not restaurante %}selected{% endif %} disabled>Elige un restaurante…</option>
         {% for r in restaurantes %}
@@ -25,6 +25,8 @@
     <span class="power-pct" id="power-pct">20%</span>
   </div>
 
+  <ol class="pasos" id="pasos" aria-label="Pasos de la reserva" hidden></ol>
+
   <form id="form-reserva" class="formulario reserva-rejilla" method="post" action="/reservar" novalidate
         data-restaurante="{{ restaurante.id }}" data-hoy="{{ hoy }}" data-hora-inicial="{{ valores.hora }}"
         data-mesa-inicial="{{ valores.mesa_id }}">
@@ -33,8 +35,8 @@
     <input type="hidden" name="hora" id="campo-hora" value="{{ valores.hora }}">
     <input type="hidden" name="mesa_id" id="campo-mesa" value="{{ valores.mesa_id }}">
 
-    <div class="panel">
-      <h2 class="subtitulo">2 · Fecha y personas — {{ restaurante.nombre }}</h2>
+    <div class="panelNone paso" data-paso="1" data-titulo="Fecha">
+      <h2 class="subtitulo">1 · Fecha y personas — {{ restaurante.nombre }}</h2>
       <label for="fecha">Fecha</label>
       <input id="fecha" name="fecha" type="date" required min="{{ hoy }}" max="{{ maximo }}" value="{{ valores.fecha }}">
       <p class="error-campo" id="err-fecha" role="alert"></p>
@@ -43,15 +45,15 @@
       <p class="error-campo" id="err-personas" role="alert"></p>
     </div>
 
-    <div class="panel">
-      <h2 class="subtitulo">3 · Hora</h2>
+    <div class="panelNone paso" data-paso="2" data-titulo="Hora">
+      <h2 class="subtitulo">2 · Hora</h2>
       <p class="ayuda" id="estado-disp" aria-live="polite">Cargando disponibilidad…</p>
       <div class="chips" id="chips-hora" role="radiogroup" aria-label="Horas disponibles"></div>
       <p class="error-campo" id="err-hora" role="alert"></p>
     </div>
 
-    <div class="panel ancho">
-      <h2 class="subtitulo">4 · Mesa</h2>
+    <div class="panel ancho paso" data-paso="3" data-titulo="Mesa">
+      <h2 class="subtitulo">3 · Mesa</h2>
       <p class="ayuda">Elige una mesa en el plano o deja que la asignemos automáticamente.</p>
       <label class="check"><input type="checkbox" id="auto-mesa" {% if not valores.mesa_id %}checked{% endif %}> Asignar mesa automáticamente</label>
       <div class="plano" id="plano" role="group" aria-label="Plano de mesas"></div>
@@ -62,8 +64,8 @@
       <p class="error-campo" id="err-mesa" role="alert"></p>
     </div>
 
-    <div class="panel ancho" id="paso-pedido">
-      <h2 class="subtitulo">5 · Pre-pedido (opcional)</h2>
+    <div class="panel ancho paso" id="paso-pedido" data-paso="4" data-titulo="Pedido">
+      <h2 class="subtitulo">4 · Pre-pedido (opcional)</h2>
       {% if carrito and carrito.lineas %}
         {% if carrito.restaurante_id != restaurante.id %}
         <div class="aviso aviso-error" role="alert">Tu pre-pedido es de otro restaurante y no se puede confirmar aquí. Vacíalo desde el cajón o elige ese restaurante.</div>
@@ -78,8 +80,8 @@
       {% endif %}
     </div>
 
-    <div class="panel ancho">
-      <h2 class="subtitulo">6 · Notas (opcional)</h2>
+    <div class="panel ancho paso" data-paso="5" data-titulo="Confirmar">
+      <h2 class="subtitulo">5 · Confirmar (opcional)</h2>
       <label for="notas">Alergias, celebración, silla para bebé…</label>
       <textarea id="notas" name="notas" rows="3" maxlength="300">{{ valores.notas }}</textarea>
       <button class="btn btn-rojo btn-grande" type="submit">CONFIRMAR RESERVA</button>

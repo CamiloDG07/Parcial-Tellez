@@ -46,6 +46,7 @@
     b.disabled = true;
     try {
       await window.Carrito.agregar(parseInt(b.dataset.agregar, 10), cantidad);
+      if (window.volarAlCarrito) window.volarAlCarrito(plato.querySelector('.plato-foto img'));
       avisar(`Agregado: ${plato.querySelector('h3').textContent} × ${cantidad}`, 'ok');
     } catch (e) {
       avisar(e.message, 'error');
