@@ -1,0 +1,23 @@
+flowchart TB
+    subgraph P["CAPA 1 · Presentación (Vista + Controlador)"]
+        T["templates Jinja2 + static (CSS/JS)"]
+        C["controladores: auth · cliente · admin · api"]
+    end
+    subgraph N["CAPA 2 · Negocio"]
+        F["ReservaFacade"]
+        PX["ReservaServiceProxy"]
+        S["ReservaService · MesaService · HorarioService · RestauranteService · AuthService"]
+        PT["Builder · Factory Method"]
+    end
+    subgraph D["CAPA 3 · Datos (Modelo + DAO)"]
+        DAO["BaseDAO · UsuarioDAO · RestauranteDAO · MesaDAO · HorarioDAO · ReservaDAO"]
+        CX["ConexionBD (Singleton)"]
+        DB[("SQLite · schema.sql")]
+    end
+    T --- C
+    C -->|cliente| F
+    C -->|admin| S
+    C -->|admin: reservas| PX
+    F --> PX --> S
+    S --> PT
+    S --> DAO --> CX --> DB

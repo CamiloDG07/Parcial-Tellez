@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block titulo %}Reservas{% endblock %}
+{% block contenido %}
+<section class="contenedor">
+  <p class="etiqueta">CAM 05 — {{ restaurante.nombre|upper }}</p>
+  <h1 class="titular">RESERVAS</h1>
+
+  <form method="get" action="/admin/reservas" class="panel filtros">
+    <div><label for="f-fecha">Fecha</label><input id="f-fecha" name="fecha" type="date" value="{{ filtro.fecha }}"></div>
+    <div><label for="f-estado">Estado</label>
+      <select id="f-estado" name="estado"><option value="">Todos</option>
+        {% for e in estados %}<option value="{{ e }}" {% if e == filtro.estado %}selected{% endif %}>{{ e }}</option>{% endfor %}
+      </select></div>
+    <button class="btn btn-dorado" type="submit">FILTRAR</button>
+    <a class="btn btn-fantasma" href="/admin/reservas">LIMPIAR</a>
+  </form>
+
+  {% if filas %}
+  <div class="tabla-envoltura">
+  <table class="tabla">
+    <caption class="solo-lectores">Reservas del restaurante</caption>
+    <thead><tr><th scope="col">#</th><th scope="col">Cliente</th><th scope="col">Fecha</th><th scope="col">Hora</th>
+      <th scope="col">Pers.</th><th scope="col">Mesa</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead>
+    <tbody>
+    {% for f in filas %}{% set r = f.reserva %}
+      <tr>
+        <td data-etiqueta="#">{{ r.id }}</td>
+        <td data-etiqueta="Cliente">{{ f.cliente.nombre }}<br><small>{{ f.cliente.email }}</small></td>
+        <td data-etiqueta="Fecha">{{ r.fecha }}</td>
+        <td data-etiqueta="Hora">{{ r.hora }}</td>
+        <td data-etiqueta="Pers.">{{ r.num_personas }}</td>
+        <td data-etiqueta="Mesa">{{ f.mesa.numero }}</td>
+        <td data-etiqueta="Estado"><span class="estado estado-{{ r.estado|lower }}">{{ r.estado }}</span></td>
+        <td data-etiqueta="Acciones" class="acciones">
+          {% if r.estado == 'PENDIENTE' %}
+          <form method="post" action="/admin/reservas/{{ r.id }}/confirmar" class="en-linea">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="btn btn-verde btn-sm" type="submit">CONFIRMAR</button></form>
+          {% endif %}
+          {% if r.estado != 'CANCELADA' %}
+          <form method="post" action="/admin/reservas/{{ r.id }}/cancelar" class="en-linea">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="btn btn-fantasma btn-sm" type="submit" data-confirmar="¿Cancelar la reserva #{{ r.id }}?">CANCELAR</button></form>
+          {% endif %}
+        </td>
+      </tr>
+      {% if r.notas %}<tr class="fila-notas"><td></td><td colspan="7">Notas: {{ r.notas }}</td></tr>{% endif %}
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p class="vacio">No hay reservas con esos filtros.</p>
+  {% endif %}
+</section>
+{% endblock %}

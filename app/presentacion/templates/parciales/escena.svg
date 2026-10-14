@@ -1,0 +1,33 @@
+<svg class="escena" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Ilustración: escenario oscuro con cortinas, banderines y siluetas con ojos brillantes">
+  <defs>
+    <linearGradient id="cortina" x1="0" x2="1"><stop offset="0" stop-color="#5a1020"/><stop offset=".5" stop-color="#8e1b2b"/><stop offset="1" stop-color="#4a0d1a"/></linearGradient>
+    <radialGradient id="foco" cx=".5" cy="0" r=".9"><stop offset="0" stop-color="#f2b705" stop-opacity=".35"/><stop offset="1" stop-color="#f2b705" stop-opacity="0"/></radialGradient>
+    <pattern id="damero" width="60" height="30" patternUnits="userSpaceOnUse"><rect width="30" height="15" fill="#e9e9e9"/><rect x="30" y="15" width="30" height="15" fill="#e9e9e9"/><rect x="30" width="30" height="15" fill="#0b0b0f"/><rect y="15" width="30" height="15" fill="#0b0b0f"/></pattern>
+  </defs>
+  <rect width="800" height="450" fill="#0a0612"/>
+  <rect width="800" height="300" fill="url(#foco)"/>
+  <!-- cortinas -->
+  <path d="M0 0h190c-30 90-20 180-10 300H0z" fill="url(#cortina)"/>
+  <path d="M800 0H610c30 90 20 180 10 300h180z" fill="url(#cortina)"/>
+  <path d="M0 0h800v40c-60 18-110-6-170 12S520 52 460 38 330 56 270 40 120 56 60 40 0 52 0 52z" fill="#7b1626"/>
+  <!-- banderines -->
+  <g opacity=".9">
+    <path d="M0 70 Q400 130 800 70" stroke="#f2b705" stroke-width="2" fill="none"/>
+    <g fill="#7b3fb0"><path d="M60 80l14 0-7 24z"/><path d="M180 98l14 0-7 24z"/><path d="M300 112l14 0-7 24z"/><path d="M420 114l14 0-7 24z"/><path d="M540 108l14 0-7 24z"/><path d="M660 94l14 0-7 24z"/></g>
+    <g fill="#f2b705"><path d="M120 90l14 0-7 24z"/><path d="M240 106l14 0-7 24z"/><path d="M360 114l14 0-7 24z"/><path d="M480 112l14 0-7 24z"/><path d="M600 102l14 0-7 24z"/><path d="M720 84l14 0-7 24z"/></g>
+  </g>
+  <!-- siluetas genéricas con ojos brillantes -->
+  <g fill="#050308">
+    <ellipse cx="280" cy="210" rx="46" ry="52"/><circle cx="246" cy="166" r="14"/><circle cx="314" cy="166" r="14"/><rect x="236" y="255" width="88" height="70" rx="14"/>
+    <ellipse cx="520" cy="205" rx="52" ry="48"/><rect x="496" y="150" width="48" height="26" rx="6"/><rect x="480" y="248" width="80" height="78" rx="14"/>
+  </g>
+  <g class="ojos" fill="#39ff7e">
+    <circle cx="266" cy="208" r="7"/><circle cx="294" cy="208" r="7"/>
+    <circle cx="505" cy="200" r="7.5" fill="#d9232d"/><circle cx="535" cy="200" r="7.5" fill="#d9232d"/>
+  </g>
+  <!-- sombreros de fiesta -->
+  <path d="M258 140l22-48 22 48z" fill="#f2b705"/><circle cx="280" cy="90" r="5" fill="#d9232d"/>
+  <!-- escenario y suelo -->
+  <rect y="300" width="800" height="18" fill="#2a1445"/>
+  <rect y="318" width="800" height="132" fill="url(#damero)" opacity=".55"/>
+</svg>

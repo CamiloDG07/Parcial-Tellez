@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titulo %}Inicio{% endblock %}
+{% block contenido %}
+<section class="contenedor">
+  <div class="empieza">
+    <hr>
+    <h2 class="titular-sec">EMPIEZA TU RESERVA</h2>
+    <div class="empieza-btns">
+      <a class="btn btn-rojo btn-grande" href="/reservar">RESERVAR AHORA</a>
+      <a class="btn btn-claro btn-grande" href="/mis-reservas">MIS RESERVAS</a>
+    </div>
+    <hr>
+  </div>
+
+  <div class="rejilla-inicio">
+    <article class="banner feed feed-0">
+      {% include "parciales/escena.svg" %}
+      <div class="banner-texto">
+        <p class="etiqueta">CAM 01 — SALA PRINCIPAL</p>
+        <h1 class="mega">LA NOCHE<br>ES TUYA.<br>RESERVA<br>TU MESA.</h1>
+        <p class="lead">Restaurantes abiertos hasta tarde. Elige fecha, hora y mesa en el plano; nosotros vigilamos el resto.</p>
+        <a class="btn btn-dorado btn-grande" href="/reservar">RESERVA AQUÍ</a>
+      </div>
+    </article>
+    <div class="destacados">
+      {% for d in destacados %}
+      <article class="tarjeta feed feed-{{ loop.index }}">
+        <p class="etiqueta">CAM 0{{ loop.index + 1 }} — DESTACADO</p>
+        <h3>{{ d.restaurante.nombre }}</h3>
+        <p>{{ d.restaurante.ciudad }} · {{ d.restaurante.tipo_cocina }}</p>
+        <p class="dato">AFORO {{ d.aforo }}</p>
+        <a class="btn btn-rojo btn-sm" href="/reservar?restaurante_id={{ d.restaurante.id }}">RESERVAR</a>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

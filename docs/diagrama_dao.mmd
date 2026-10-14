@@ -1,0 +1,53 @@
+classDiagram
+    class BaseDAO~T~ {
+        <<abstract>>
+        +str tabla
+        +tuple columnas
+        +obtener_por_id(id_) T
+        +listar() list~T~
+        +insertar(entidad) int
+        +actualizar(entidad)
+        +eliminar(id_)
+        #_desde_fila(fila)* T
+        #_valores(entidad) tuple
+    }
+    class UsuarioDAO {
+        +obtener_por_email(email) Usuario
+    }
+    class RestauranteDAO {
+        +buscar(nombre, tipo_cocina, ciudad) list~Restaurante~
+        +obtener_por_admin(admin_id) Restaurante
+        +listar_cocinas_y_ciudades() tuple
+    }
+    class MesaDAO {
+        +listar_por_restaurante(restaurante_id) list~Mesa~
+        +obtener_por_numero(restaurante_id, numero) Mesa
+    }
+    class HorarioDAO {
+        +listar_por_restaurante(restaurante_id) list~Horario~
+        +obtener_por_dia(restaurante_id, dia_semana) Horario
+    }
+    class ReservaDAO {
+        +listar_por_usuario(usuario_id) list~Reserva~
+        +listar_por_restaurante(restaurante_id, fecha, estado) list~Reserva~
+        +listar_activas_por_mesa_y_fecha(mesa_id, fecha) list~Reserva~
+        +listar_activas_por_restaurante_y_fecha(restaurante_id, fecha) list~Reserva~
+        +cambiar_estado(reserva_id, estado)
+    }
+    BaseDAO <|-- UsuarioDAO
+    BaseDAO <|-- RestauranteDAO
+    BaseDAO <|-- MesaDAO
+    BaseDAO <|-- HorarioDAO
+    BaseDAO <|-- ReservaDAO
+    UsuarioDAO ..> Usuario : maneja (vía fábrica inyectada)
+    RestauranteDAO ..> Restaurante
+    MesaDAO ..> Mesa
+    HorarioDAO ..> Horario
+    ReservaDAO ..> Reserva
+    BaseDAO ..> ConexionBD : usa sesion()
+    class Usuario { +permisos() frozenset +ruta_inicio() str }
+    class Cliente
+    class Administrador
+    Usuario <|-- Cliente
+    Usuario <|-- Administrador
+    class ConexionBD { <<Singleton>> }

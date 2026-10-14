@@ -1,0 +1,50 @@
+erDiagram
+    usuario ||--o{ reserva : "realiza"
+    usuario ||--o{ restaurante : "administra (admin_id)"
+    restaurante ||--o{ mesa : "tiene"
+    restaurante ||--o{ horario : "abre según"
+    restaurante ||--o{ reserva : "recibe"
+    mesa ||--o{ reserva : "se asigna a"
+    usuario {
+        INTEGER id PK
+        TEXT nombre
+        TEXT email UK
+        TEXT password_hash
+        TEXT rol "CHECK cliente|administrador"
+    }
+    restaurante {
+        INTEGER id PK
+        TEXT nombre
+        TEXT direccion
+        TEXT ciudad
+        TEXT tipo_cocina
+        TEXT descripcion
+        INTEGER admin_id FK
+    }
+    mesa {
+        INTEGER id PK
+        INTEGER restaurante_id FK
+        INTEGER numero "UK con restaurante_id"
+        INTEGER capacidad "CHECK > 0"
+        TEXT ubicacion
+        INTEGER activa "CHECK 0|1"
+    }
+    horario {
+        INTEGER id PK
+        INTEGER restaurante_id FK
+        INTEGER dia_semana "CHECK 0..6, UK con restaurante_id"
+        TEXT hora_apertura
+        TEXT hora_cierre "CHECK > apertura"
+    }
+    reserva {
+        INTEGER id PK
+        INTEGER usuario_id FK
+        INTEGER restaurante_id FK
+        INTEGER mesa_id FK
+        TEXT fecha
+        TEXT hora
+        INTEGER num_personas "CHECK > 0"
+        TEXT estado "CHECK PENDIENTE|CONFIRMADA|CANCELADA"
+        TEXT notas
+        TEXT creado_en
+    }

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block contenido %}
+<section class="contenedor estrecho error-pagina">
+  <p class="etiqueta">ERROR {{ codigo }}</p>
+  <h1 class="titular glitch" data-texto="{{ titulo }}">{{ titulo }}</h1>
+  <p class="lead">{{ detalle }}</p>
+  <a class="btn btn-dorado" href="/">VOLVER AL INICIO</a>
+</section>
+{% endblock %}

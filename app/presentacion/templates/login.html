@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block titulo %}Iniciar sesión{% endblock %}
+{% block contenido %}
+<section class="contenedor estrecho">
+  <p class="etiqueta">CAM 00 — ACCESO</p>
+  <h1 class="titular">INICIAR SESIÓN</h1>
+  <form method="post" action="/login" class="panel formulario" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    {% if error %}<div class="aviso aviso-error" role="alert">{{ error }}</div>{% endif %}
+    <label for="email">Correo electrónico</label>
+    <input id="email" name="email" type="email" autocomplete="username" required value="{{ email or '' }}">
+    <label for="password">Contraseña</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required>
+    <button class="btn btn-rojo" type="submit">ENTRAR</button>
+  </form>
+</section>
+{% endblock %}

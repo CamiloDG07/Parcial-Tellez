@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block titulo %}Horarios{% endblock %}
+{% block contenido %}
+<section class="contenedor">
+  <p class="etiqueta">CAM 05 — {{ restaurante.nombre|upper }}</p>
+  <h1 class="titular">HORARIOS</h1>
+  <p class="ayuda">Un día sin horario se considera cerrado. La última reserva debe terminar (120 min) antes del cierre.</p>
+  <div class="rejilla-horarios">
+    {% for nombre in DIAS_SEMANA %}
+    {% set h = por_dia.get(loop.index0) %}
+    <form method="post" action="/admin/horarios" class="panel formulario" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <input type="hidden" name="dia_semana" value="{{ loop.index0 }}">
+      <h2 class="subtitulo">{{ nombre }} {% if not h %}<span class="estado estado-cancelada">CERRADO</span>{% endif %}</h2>
+      <label for="ap-{{ loop.index0 }}">Apertura</label>
+      <input id="ap-{{ loop.index0 }}" name="hora_apertura" type="time" required value="{{ h.hora_apertura if h else '12:00' }}">
+      <label for="ci-{{ loop.index0 }}">Cierre</label>
+      <input id="ci-{{ loop.index0 }}" name="hora_cierre" type="time" required value="{{ h.hora_cierre if h else '22:00' }}">
+      <div class="acciones">
+        <button class="btn btn-claro btn-sm" type="submit">{% if h %}GUARDAR{% else %}ABRIR ESTE DÍA{% endif %}</button>
+        {% if h %}<button class="btn btn-fantasma btn-sm" type="submit" formaction="/admin/horarios/{{ h.id }}/eliminar"
+                data-confirmar="¿Cerrar los {{ nombre }}?">CERRAR DÍA</button>{% endif %}
+      </div>
+    </form>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

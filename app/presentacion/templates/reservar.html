@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block titulo %}Reservar{% endblock %}
+{% block contenido %}
+<section class="contenedor">
+  <p class="etiqueta">CAM 04 — NUEVA RESERVA</p>
+  <h1 class="titular">RESERVA TU MESA</h1>
+
+  <form class="panel filtros" method="get" action="/reservar">
+    <div>
+      <label for="restaurante-sel">1 · Restaurante</label>
+      <select id="restaurante-sel" name="restaurante_id" required>
+        <option value="" {% if not restaurante %}selected{% endif %} disabled>Elige un restaurante…</option>
+        {% for r in restaurantes %}
+        <option value="{{ r.id }}" {% if restaurante and restaurante.id == r.id %}selected{% endif %}>{{ r.nombre }} — {{ r.ciudad }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button class="btn btn-claro" type="submit">{% if restaurante %}CAMBIAR{% else %}CONTINUAR{% endif %}</button>
+  </form>
+
+  {% if restaurante %}
+  <div class="power" role="progressbar" aria-label="Progreso de la reserva" aria-valuemin="0" aria-valuemax="100" aria-valuenow="20" id="power">
+    <span class="power-etq">POWER</span>
+    <div class="power-barra"><div class="power-relleno" id="power-relleno"></div></div>
+    <span class="power-pct" id="power-pct">20%</span>
+  </div>
+
+  <form id="form-reserva" class="formulario reserva-rejilla" method="post" action="/reservar" novalidate
+        data-restaurante="{{ restaurante.id }}" data-hoy="{{ hoy }}" data-hora-inicial="{{ valores.hora }}"
+        data-mesa-inicial="{{ valores.mesa_id }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <input type="hidden" name="restaurante_id" value="{{ restaurante.id }}">
+    <input type="hidden" name="hora" id="campo-hora" value="{{ valores.hora }}">
+    <input type="hidden" name="mesa_id" id="campo-mesa" value="{{ valores.mesa_id }}">
+
+    <div class="panel">
+      <h2 class="subtitulo">2 · Fecha y personas — {{ restaurante.nombre }}</h2>
+      <label for="fecha">Fecha</label>
+      <input id="fecha" name="fecha" type="date" required min="{{ hoy }}" max="{{ maximo }}" value="{{ valores.fecha }}">
+      <p class="error-campo" id="err-fecha" role="alert"></p>
+      <label for="personas">Número de personas</label>
+      <input id="personas" name="personas" type="number" required min="1" max="30" step="1" value="{{ valores.personas }}" inputmode="numeric">
+      <p class="error-campo" id="err-personas" role="alert"></p>
+    </div>
+
+    <div class="panel">
+      <h2 class="subtitulo">3 · Hora</h2>
+      <p class="ayuda" id="estado-disp" aria-live="polite">Cargando disponibilidad…</p>
+      <div class="chips" id="chips-hora" role="radiogroup" aria-label="Horas disponibles"></div>
+      <p class="error-campo" id="err-hora" role="alert"></p>
+    </div>
+
+    <div class="panel ancho">
+      <h2 class="subtitulo">4 · Mesa</h2>
+      <p class="ayuda">Elige una mesa en el plano o deja que la asignemos automáticamente.</p>
+      <label class="check"><input type="checkbox" id="auto-mesa" {% if not valores.mesa_id %}checked{% endif %}> Asignar mesa automáticamente</label>
+      <div class="plano" id="plano" role="group" aria-label="Plano de mesas"></div>
+      <ul class="leyenda" aria-label="Leyenda del plano">
+        <li><i class="m-libre"></i> Libre</li><li><i class="m-ocupada"></i> Ocupada</li>
+        <li><i class="m-sel"></i> Seleccionada</li><li><i class="m-nula"></i> No disponible / pequeña</li>
+      </ul>
+      <p class="error-campo" id="err-mesa" role="alert"></p>
+    </div>
+
+    <div class="panel ancho">
+      <h2 class="subtitulo">5 · Notas (opcional)</h2>
+      <label for="notas">Alergias, celebración, silla para bebé…</label>
+      <textarea id="notas" name="notas" rows="3" maxlength="300">{{ valores.notas }}</textarea>
+      <button class="btn btn-rojo btn-grande" type="submit">CONFIRMAR RESERVA</button>
+    </div>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}
+{% block scripts %}{% if restaurante %}<script src="/static/js/reservar.js" defer></script>{% endif %}{% endblock %}

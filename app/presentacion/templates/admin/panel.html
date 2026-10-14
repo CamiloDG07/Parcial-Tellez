@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block titulo %}Panel{% endblock %}
+{% block contenido %}
+<section class="contenedor">
+  <p class="etiqueta">CAM 05 — SALA DE CONTROL</p>
+  <h1 class="titular">PANEL · {{ restaurante.nombre }}</h1>
+  <div class="kpis">
+    <div class="kpi"><span class="kpi-num">{{ resumen.hoy }}</span><span>Reservas de hoy</span></div>
+    <div class="kpi"><span class="kpi-num">{{ resumen.pendientes }}</span><span>Pendientes de confirmar</span></div>
+    <div class="kpi"><span class="kpi-num">{{ resumen.proximas }}</span><span>Próximas</span></div>
+    <div class="kpi"><span class="kpi-num">{{ resumen.mesas }}</span><span>Mesas</span></div>
+  </div>
+  <div class="acciones">
+    <a class="btn btn-rojo" href="/admin/reservas">GESTIONAR RESERVAS</a>
+    <a class="btn btn-claro" href="/admin/mesas">MESAS</a>
+    <a class="btn btn-claro" href="/admin/horarios">HORARIOS</a>
+  </div>
+</section>
+{% endblock %}

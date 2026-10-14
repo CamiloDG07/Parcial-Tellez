@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block titulo %}Mesas{% endblock %}
+{% block contenido %}
+<section class="contenedor">
+  <p class="etiqueta">CAM 05 — {{ restaurante.nombre|upper }}</p>
+  <h1 class="titular">MESAS</h1>
+
+  <form method="post" action="/admin/mesas" class="panel filtros" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <div><label for="n-numero">Número</label><input id="n-numero" name="numero" type="number" min="1" required></div>
+    <div><label for="n-cap">Capacidad</label><input id="n-cap" name="capacidad" type="number" min="1" max="30" required></div>
+    <div><label for="n-ubic">Ubicación</label><input id="n-ubic" name="ubicacion" maxlength="60" placeholder="Salón, terraza…"></div>
+    <label class="check"><input type="checkbox" name="activa" value="1" checked> Activa</label>
+    <button class="btn btn-dorado" type="submit">AGREGAR MESA</button>
+  </form>
+
+  <div class="tabla-envoltura">
+  <table class="tabla tabla-editable">
+    <caption class="solo-lectores">Mesas del restaurante</caption>
+    <thead><tr><th scope="col">Número</th><th scope="col">Capacidad</th><th scope="col">Ubicación</th><th scope="col">Activa</th><th scope="col">Acciones</th></tr></thead>
+    <tbody>
+    {% for m in mesas %}
+      <tr>
+        <td colspan="5">
+          <form method="post" action="/admin/mesas/{{ m.id }}/editar" class="fila-form" novalidate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <label class="solo-lectores" for="num-{{ m.id }}">Número</label>
+            <input id="num-{{ m.id }}" name="numero" type="number" min="1" value="{{ m.numero }}" required>
+            <label class="solo-lectores" for="cap-{{ m.id }}">Capacidad</label>
+            <input id="cap-{{ m.id }}" name="capacidad" type="number" min="1" max="30" value="{{ m.capacidad }}" required>
+            <label class="solo-lectores" for="ub-{{ m.id }}">Ubicación</label>
+            <input id="ub-{{ m.id }}" name="ubicacion" value="{{ m.ubicacion }}" maxlength="60">
+            <label class="check"><input type="checkbox" name="activa" value="1" {% if m.activa %}checked{% endif %}> Activa</label>
+            <button class="btn btn-claro btn-sm" type="submit">GUARDAR</button>
+            <button class="btn btn-fantasma btn-sm" type="submit" formaction="/admin/mesas/{{ m.id }}/eliminar"
+                    data-confirmar="¿Eliminar la mesa {{ m.numero }}?">ELIMINAR</button>
+          </form>
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="5" class="vacio">Aún no hay mesas.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+{% endblock %}

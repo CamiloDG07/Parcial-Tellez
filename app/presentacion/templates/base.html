@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Reservas{% endblock %} · {{ BRAND_NAME }}</title>
+  <meta name="description" content="Reserva tu mesa en {{ BRAND_NAME }}: restaurantes con vigilancia nocturna.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/tema.css">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block clase_body %}{% endblock %}">
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+  <div class="crt" aria-hidden="true"><div class="crt-ruido"></div></div>
+
+  <div class="hud" aria-hidden="true">
+    <span class="rec"><i></i> REC</span>
+    <span class="hud-cam">CAM 01 · <span id="reloj">12:00 AM</span></span>
+    <span class="hud-power">POWER 99%</span>
+  </div>
+
+  <header class="barra">
+    <a class="logo" href="/" aria-label="{{ BRAND_NAME }} — inicio">
+      <svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="#f2b705" stroke-width="2"/><circle cx="13" cy="18" r="3.2" fill="#39ff7e"/><circle cx="27" cy="18" r="3.2" fill="#39ff7e"/><path d="M12 28h16" stroke="#f2b705" stroke-width="2" stroke-linecap="round"/></svg>
+      <span>{{ BRAND_NAME }}</span>
+    </a>
+    <button class="menu-btn" aria-expanded="false" aria-controls="menu" id="menu-btn">MENÚ</button>
+    <nav id="menu" class="menu" aria-label="Principal">
+      {% if usuario and usuario.rol == 'administrador' %}
+        <a href="/admin" {% if request.url.path == '/admin' %}aria-current="page"{% endif %}>PANEL</a>
+        <a href="/admin/mesas" {% if request.url.path.startswith('/admin/mesas') %}aria-current="page"{% endif %}>MESAS</a>
+        <a href="/admin/horarios" {% if request.url.path.startswith('/admin/horarios') %}aria-current="page"{% endif %}>HORARIOS</a>
+        <a href="/admin/reservas" {% if request.url.path.startswith('/admin/reservas') %}aria-current="page"{% endif %}>RESERVAS</a>
+      {% else %}
+        <a href="/reservar" {% if request.url.path == '/reservar' %}aria-current="page"{% endif %}>RESERVAR</a>
+        <a href="/restaurantes" {% if request.url.path == '/restaurantes' %}aria-current="page"{% endif %}>RESTAURANTES</a>
+        <a href="/mis-reservas" {% if request.url.path == '/mis-reservas' %}aria-current="page"{% endif %}>MIS RESERVAS</a>
+      {% endif %}
+    </nav>
+    <div class="barra-der">
+      {% if usuario %}
+        <span class="usuario" title="{{ usuario.email }}">{{ usuario.nombre }}</span>
+        {% if usuario.rol == 'cliente' %}
+        <a class="carrito" href="/mis-reservas" aria-label="Mis reservas próximas: {{ reservas_proximas }}">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 5h2l2 10h11l2-7H7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="19" r="1.6" fill="currentColor"/><circle cx="17" cy="19" r="1.6" fill="currentColor"/></svg>
+          <span class="insignia" id="insignia-reservas">{{ reservas_proximas }}</span>
+        </a>
+        {% endif %}
+        <form method="post" action="/logout" class="en-linea">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="btn btn-fantasma btn-sm" type="submit">SALIR</button>
+        </form>
+      {% else %}
+        <a class="btn btn-dorado btn-sm" href="/login">INICIAR SESIÓN</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <main id="contenido" tabindex="-1">
+    <div class="avisos" role="status" aria-live="polite">
+      {% for m in mensajes %}
+        <div class="aviso aviso-{{ m.tipo }}">{{ m.texto }}</div>
+      {% endfor %}
+    </div>
+    {% block contenido %}{% endblock %}
+  </main>
+
+  <footer class="pie">
+    <p><strong>{{ BRAND_NAME }}</strong> — marca ficticia para un proyecto académico (Patrones de Diseño de Software, Universidad Sergio Arboleda). Inspiración estética propia; sin material de terceros.</p>
+    <p class="pie-creditos">Tipografías: Google Fonts (OFL). Ilustraciones: SVG/CSS originales.</p>
+  </footer>
+
+  <script src="/static/js/base.js" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

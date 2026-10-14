@@ -1,0 +1,85 @@
+classDiagram
+    direction LR
+    %% ---- Singleton ----
+    class ConexionBD {
+        <<Singleton>>
+        -ConexionBD _instancia$
+        -Lock _lock$
+        +reiniciar(ruta)$ ConexionBD
+        +conectar() Connection
+        +sesion() Connection
+        +inicializar_esquema()
+    }
+    %% ---- Factory Method ----
+    class FabricaUsuario {
+        <<abstract · Creator>>
+        +crear(datos) Usuario
+        #_instanciar(datos)* Usuario
+    }
+    class FabricaCliente
+    class FabricaAdministrador
+    class UsuarioFactory {
+        +crear(rol, datos)$ Usuario
+    }
+    class Usuario { <<Product>> +permisos() +ruta_inicio() }
+    class Cliente
+    class Administrador
+    FabricaUsuario <|-- FabricaCliente
+    FabricaUsuario <|-- FabricaAdministrador
+    UsuarioFactory o-- FabricaUsuario : elige creador
+    Usuario <|-- Cliente
+    Usuario <|-- Administrador
+    FabricaCliente ..> Cliente
+    FabricaAdministrador ..> Administrador
+    %% ---- Builder ----
+    class ReservaBuilder {
+        <<Builder>>
+        +para_cliente(usuario_id)
+        +en_restaurante(restaurante_id)
+        +el_dia(fecha)
+        +a_las(hora)
+        +para_personas(personas)
+        +en_mesa(mesa_id)
+        +con_notas(notas)
+        +build() Reserva
+    }
+    class ReservaDirector {
+        <<Director>>
+        +reserva_rapida(usuario_id, restaurante_id, fecha, hora, mesa_id) Reserva
+    }
+    ReservaDirector --> ReservaBuilder
+    %% ---- Proxy ----
+    class IReservaService {
+        <<interface · Subject>>
+        +crear_reserva(actor, datos)
+        +cancelar_reserva(actor, reserva_id)
+        +confirmar_reserva(actor, reserva_id)
+        +obtener(actor, reserva_id)
+        +mis_reservas(actor)
+        +listar_por_restaurante(actor, restaurante_id, fecha, estado)
+        +mesas_libres(restaurante_id, fecha, hora, personas)
+    }
+    class ReservaService { <<RealSubject>> }
+    class ReservaServiceProxy { <<Proxy · protección + log>> }
+    IReservaService <|.. ReservaService
+    IReservaService <|.. ReservaServiceProxy
+    ReservaServiceProxy o-- ReservaService : delega
+    ReservaService ..> ReservaBuilder : crear_reserva usa build()
+    %% ---- Facade ----
+    class ReservaFacade {
+        <<Facade>>
+        +buscar_disponibilidad(restaurante_id, fecha, personas)
+        +reservar(actor, datos)
+        +cancelar(actor, reserva_id)
+        +mis_reservas(actor)
+        +listar_restaurantes(nombre, tipo_cocina, ciudad)
+        +enriquecer(reservas)
+    }
+    ReservaFacade o-- IReservaService : recibe el PROXY
+    ReservaFacade ..> RestauranteService
+    ReservaFacade ..> MesaService
+    ReservaFacade ..> HorarioService
+    %% ---- capas ----
+    class ClienteController { <<presentación>> }
+    ClienteController --> ReservaFacade
+    ReservaService ..> ConexionBD : vía DAO

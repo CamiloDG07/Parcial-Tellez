@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block titulo %}Restaurantes{% endblock %}
+{% block contenido %}
+<section class="contenedor">
+  <p class="etiqueta">CAM 02 — DIRECTORIO</p>
+  <h1 class="titular">RESTAURANTES</h1>
+
+  <form class="filtros panel" method="get" action="/restaurantes" role="search">
+    <div><label for="f-nombre">Nombre</label>
+      <input id="f-nombre" name="nombre" value="{{ filtro.nombre }}" maxlength="60" placeholder="Ej. Pizzería"></div>
+    <div><label for="f-cocina">Tipo de cocina</label>
+      <select id="f-cocina" name="cocina"><option value="">Todas</option>
+        {% for c in cocinas %}<option value="{{ c }}" {% if c == filtro.cocina %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select></div>
+    <div><label for="f-ciudad">Ciudad</label>
+      <select id="f-ciudad" name="ciudad"><option value="">Todas</option>
+        {% for c in ciudades %}<option value="{{ c }}" {% if c == filtro.ciudad %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select></div>
+    <button class="btn btn-dorado" type="submit">BUSCAR</button>
+  </form>
+
+  {% if restaurantes %}
+  <div class="rejilla-feeds">
+    {% for item in restaurantes %}
+    {% set r = item.restaurante %}
+    <article class="tarjeta feed feed-{{ loop.index0 % 5 }}">
+      <p class="etiqueta">CAM {{ '%02d' % loop.index }} — {{ r.ciudad|upper }}</p>
+      <h2>{{ r.nombre }}</h2>
+      <p class="dato">{{ r.tipo_cocina }} · {{ r.direccion }}</p>
+      <p>{{ r.descripcion }}</p>
+      <p class="dato">AFORO {{ item.aforo }} · {{ item.num_mesas }} MESAS</p>
+      {% if usuario and usuario.rol == 'administrador' %}
+      {% else %}
+      <a class="btn btn-rojo btn-sm" href="/reservar?restaurante_id={{ r.id }}">RESERVAR</a>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="vacio">SIN SEÑAL: ningún restaurante coincide con la búsqueda.</p>
+  {% endif %}
+</section>
+{% endblock %}

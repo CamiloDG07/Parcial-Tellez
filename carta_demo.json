@@ -1,0 +1,180 @@
+{
+  "origen": "Menú de PIZZATRO (repo JuanPZ28), usado con su autorización. Solo texto y precios; sin imágenes.",
+  "moneda": "COP (pesos enteros)",
+  "categorias": [
+    {
+      "orden": 1,
+      "nombre": "Entrada",
+      "productos": [
+        {
+          "nombre": "Bruschetta Clásica",
+          "descripcion": "Pan artesanal tostado con tomate fresco, albahaca, ajo y aceite de oliva extra virgen.",
+          "precio_cop": 18000,
+          "slug_foto": "bruschetta-clasica"
+        },
+        {
+          "nombre": "Ensalada Caprese",
+          "descripcion": "Mozzarella fresca, tomate maduro y hojas de albahaca con reducción de balsámico.",
+          "precio_cop": 22000,
+          "slug_foto": "ensalada-caprese"
+        },
+        {
+          "nombre": "Carpaccio di Manzo",
+          "descripcion": "Láminas finas de lomo de res con rúcula, parmesano y limón.",
+          "precio_cop": 32000,
+          "slug_foto": "carpaccio-di-manzo"
+        },
+        {
+          "nombre": "Calamares Fritti",
+          "descripcion": "Anillos de calamar crocantes con salsa marinara y limón.",
+          "precio_cop": 29000,
+          "slug_foto": "calamares-fritti"
+        },
+        {
+          "nombre": "Arancini di Risotto",
+          "descripcion": "Croquetas de risotto rellenas de mozzarella, empanizadas y fritas.",
+          "precio_cop": 24000,
+          "slug_foto": "arancini-di-risotto"
+        },
+        {
+          "nombre": "Focaccia al Rosmarino",
+          "descripcion": "Pan plano horneado con romero, sal marina y aceite de oliva.",
+          "precio_cop": 16000,
+          "slug_foto": "focaccia-al-rosmarino"
+        },
+        {
+          "nombre": "Zuppa Minestrone",
+          "descripcion": "Sopa italiana de verduras de temporada, legumbres y pasta pequeña.",
+          "precio_cop": 19000,
+          "slug_foto": "zuppa-minestrone"
+        },
+        {
+          "nombre": "Burrata con Tomates Cherry",
+          "descripcion": "Burrata cremosa con tomates cherry confitados",
+          "precio_cop": 30000,
+          "slug_foto": "burrata-con-tomates-cherry"
+        },
+        {
+          "nombre": "Antipasto Misto",
+          "descripcion": "Tabla de jamón curado, salami, quesos, aceitunas y vegetales en conserva.",
+          "precio_cop": 38000,
+          "slug_foto": "antipasto-misto"
+        }
+      ]
+    },
+    {
+      "orden": 2,
+      "nombre": "Plato fuerte",
+      "productos": [
+        {
+          "nombre": "Pizza Margherita",
+          "descripcion": "Salsa de tomate San Marzano, mozzarella fior di latte, albahaca y aceite de oliva.",
+          "precio_cop": 36000,
+          "slug_foto": "pizza-margherita"
+        },
+        {
+          "nombre": "Pizza Pepperoni",
+          "descripcion": "Mozzarella, salsa de tomate y abundante pepperoni artesanal.",
+          "precio_cop": 42000,
+          "slug_foto": "pizza-pepperoni"
+        },
+        {
+          "nombre": "Pizza Quattro Formaggi",
+          "descripcion": "Mozzarella, gorgonzola, parmesano y provolone sobre base blanca.",
+          "precio_cop": 46000,
+          "slug_foto": "pizza-quattro-formaggi"
+        },
+        {
+          "nombre": "Spaghetti alla Carbonara",
+          "descripcion": "Spaghetti con panceta crocante, yema de huevo, pecorino y pimienta negra.",
+          "precio_cop": 41000,
+          "slug_foto": "spaghetti-alla-carbonara"
+        },
+        {
+          "nombre": "Fettuccine Alfredo",
+          "descripcion": "Fettuccine en salsa cremosa de mantequilla y parmesano, con pollo opcional.",
+          "precio_cop": 39000,
+          "slug_foto": "fettuccine-alfredo"
+        },
+        {
+          "nombre": "Lasagna alla Bolognese",
+          "descripcion": "Capas de pasta fresca, ragú de res y cerdo, bechamel y queso gratinado.",
+          "precio_cop": 44000,
+          "slug_foto": "lasagna-alla-bolognese"
+        },
+        {
+          "nombre": "Gnocchi al Pesto",
+          "descripcion": "Ñoquis de papa caseros con pesto genovés, piñones y parmesano.",
+          "precio_cop": 40000,
+          "slug_foto": "gnocchi-al-pesto"
+        },
+        {
+          "nombre": "Risotto ai Funghi",
+          "descripcion": "Arroz arborio cremoso con mezcla de hongos, vino blanco y parmesano.",
+          "precio_cop": 45000,
+          "slug_foto": "risotto-ai-funghi"
+        },
+        {
+          "nombre": "Pollo alla Parmigiana",
+          "descripcion": "Pechuga apanada con salsa pomodoro y mozzarella gratinada, con pasta.",
+          "precio_cop": 48000,
+          "slug_foto": "pollo-alla-parmigiana"
+        }
+      ]
+    },
+    {
+      "orden": 3,
+      "nombre": "Postre",
+      "productos": [
+        {
+          "nombre": "Tiramisù",
+          "descripcion": "Clásico postre de mascarpone, café espresso, bizcochos y cacao.",
+          "precio_cop": 19000,
+          "slug_foto": "tiramisu"
+        },
+        {
+          "nombre": "Panna Cotta",
+          "descripcion": "Crema de vainilla con coulis de frutos rojos.",
+          "precio_cop": 17000,
+          "slug_foto": "panna-cotta"
+        },
+        {
+          "nombre": "Cannoli Siciliani",
+          "descripcion": "Tubos crocantes rellenos de crema de ricotta con chips de chocolate.",
+          "precio_cop": 18000,
+          "slug_foto": "cannoli-siciliani"
+        },
+        {
+          "nombre": "Affogato al Caffè",
+          "descripcion": "Helado de vainilla bañado en espresso caliente.",
+          "precio_cop": 14000,
+          "slug_foto": "affogato-al-caffe"
+        },
+        {
+          "nombre": "Torta Caprese",
+          "descripcion": "Torta de chocolate y almendras, sin harina, suave y húmeda.",
+          "precio_cop": 20000,
+          "slug_foto": "torta-caprese"
+        },
+        {
+          "nombre": "Semifreddo al Limone",
+          "descripcion": "Postre helado cremoso de limón con base de galleta.",
+          "precio_cop": 18000,
+          "slug_foto": "semifreddo-al-limone"
+        },
+        {
+          "nombre": "Zeppole",
+          "descripcion": "Buñuelos italianos fritos con azúcar glass y crema pastelera.",
+          "precio_cop": 16000,
+          "slug_foto": "zeppole"
+        },
+        {
+          "nombre": "Torta della Nonna",
+          "descripcion": "Tarta de crema pastelera con piñones y azúcar glass.",
+          "precio_cop": 19000,
+          "slug_foto": "torta-della-nonna"
+        }
+      ]
+    }
+  ]
+}
