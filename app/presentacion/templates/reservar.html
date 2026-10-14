@@ -82,6 +82,18 @@
 
     <div class="panel ancho paso" data-paso="5" data-titulo="Confirmar">
       <h2 class="subtitulo">5 · Notas y confirmación</h2>
+      {% if cobro and cobro.subtotal_cop %}
+      <div class="cobro" id="cobro" aria-live="polite">
+        <h3 class="subtitulo">Total a pagar</h3>
+        <ul class="detalle-items" id="cobro-lineas">
+          {% for l in cobro.lineas %}<li>{{ l.etiqueta }} <span>{{ l.monto_cop|cop }}</span></li>{% endfor %}
+          <li class="total">TOTAL A PAGAR <span id="cobro-total">{{ cobro.total_cop|cop }}</span></li>
+        </ul>
+        <label class="check"><input type="checkbox" id="propina" name="propina" value="1" {% if propina %}checked{% endif %}>
+          Incluir propina sugerida ({{ tasa_propina }} %, voluntaria)</label>
+        <p class="ayuda">Estimado calculado por el servidor; no hay pago en línea.</p>
+      </div>
+      {% endif %}
       <label for="notas">Alergias, celebración, silla para bebé…</label>
       <textarea id="notas" name="notas" rows="3" maxlength="300">{{ valores.notas }}</textarea>
       <button class="btn btn-rojo btn-grande" type="submit">CONFIRMAR RESERVA</button>

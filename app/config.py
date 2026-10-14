@@ -18,3 +18,11 @@ DURACION_RESERVA_MIN = 120  # duración fija de cada reserva
 PASO_FRANJA_MIN = 30         # separación entre franjas ofrecidas
 ESTADOS = ("PENDIENTE", "CONFIRMADA", "CANCELADA")
 DIAS_SEMANA = ("Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo")
+
+# ---- Cobro del pre-pedido (patrón Decorator) -------------------------------------------------
+# SUPUESTOS CONFIGURABLES de demostración. No se han verificado contra la normativa vigente ni contra la rúbrica:
+# cámbialos aquí si el profesor o el negocio piden otras tasas. Son puntos porcentuales enteros.
+TASA_IMPUESTO_CONSUMO_PCT = 8        # supuesto: impuesto al consumo sobre el monto ya descontado
+TASA_PROPINA_SUGERIDA_PCT = 10       # supuesto: propina sugerida (voluntaria), sobre el monto con impuesto
+DESCUENTO_PEDIDO_GRANDE_PCT = 10     # supuesto de promoción de demostración
+DESCUENTO_PEDIDO_GRANDE_MINIMO_COP = 150_000   # el descuento aplica si el subtotal es >= a este valor

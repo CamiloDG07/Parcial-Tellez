@@ -56,3 +56,9 @@ def cambiar_carrito(request: Request, linea: LineaCarrito, usuario: Usuario = De
 @router.post("/carrito/vaciar", dependencies=[Depends(verificar_csrf)])
 def vaciar_carrito(request: Request, usuario: Usuario = Depends(requiere_cliente)):
     return fachada.carrito_vaciar(request.session)
+
+
+@router.get("/cobro")
+def cobro(request: Request, propina: bool = False, usuario: Usuario = Depends(requiere_cliente)):
+    """Total a pagar del pre-pedido en curso. El cliente solo indica si incluye la propina; los montos los calcula el servidor."""
+    return fachada.cobro_pre_pedido(request.session, propina)

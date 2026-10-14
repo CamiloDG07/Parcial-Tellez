@@ -3,7 +3,8 @@ from __future__ import annotations
 
 from datetime import date
 
-from app.datos.modelos import Reserva, Restaurante, Usuario
+from app.datos.modelos import Reserva, ReservaItem, Restaurante, Usuario
+from app.negocio.patrones.estructurales.cobro_decorator import desglose
 from app.negocio.excepciones import ReglaNegocioError
 from app.negocio.servicios.auth_service import AuthService
 from app.negocio.servicios.carta_service import CarritoService, CartaService
@@ -115,6 +116,17 @@ class ReservaFacade:
         self._carrito.vaciar(sesion)
         return self._carrito.resumen(sesion)
 
+    def cobro_pre_pedido(self, sesion, con_propina: bool = False) -> dict:
+        """Total a pagar del pre-pedido en curso (carrito de la sesión), armado con la cadena de decoradores.
+        El cliente solo decide si incluye la propina; los montos se calculan aquí."""
+        lineas = self._carrito.resumen(sesion)["lineas"]
+        items = [ReservaItem(None, None, l["producto_id"], l["cantidad"], l["precio_cop"]) for l in lineas]
+        return desglose(items, con_propina)
+
+    def cobro_de_reserva(self, reserva: Reserva, con_propina: bool = False) -> dict:
+        """Total a pagar de una reserva ya creada (usa los precios congelados de sus ítems)."""
+        return desglose(reserva.items, con_propina)
+
     def reservar_con_pre_pedido(self, actor: Usuario, datos: dict, sesion) -> Reserva:
         """Reserva usando el carrito de la sesión (debe ser del mismo restaurante); lo vacía al confirmar."""
         datos = dict(datos)
@@ -138,5 +150,7 @@ class ReservaFacade:
             detalle = self._carta.detalle_items(r.id)
             filas.append({"reserva": r, "restaurante": restaurantes[r.restaurante_id],
                           "mesa": mesas[r.mesa_id], "cliente": usuarios[r.usuario_id],
-                          "detalle": detalle, "total_cop": sum(d["item"].subtotal_cop for d in detalle)})
+                          "detalle": detalle, "total_cop": sum(d["item"].subtotal_cop for d in detalle),
+                          # total a pagar (sin propina: la elección de propina no se guarda) y propina sugerida
+                          "cobro": desglose([d["item"] for d in detalle], False)})
         return filas

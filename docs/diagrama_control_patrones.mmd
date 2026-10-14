@@ -78,6 +78,8 @@ classDiagram
         +carta_de(restaurante_id)
         +carrito_ver(sesion)
         +carrito_agregar(sesion, producto_id, cantidad)
+        +cobro_pre_pedido(sesion, con_propina)
+        +cobro_de_reserva(reserva, con_propina)
         +enriquecer(reservas)
     }
     class CarritoService { +agregar(sesion, producto_id, cantidad) +items_para_reserva(sesion, restaurante_id) }
@@ -89,6 +91,43 @@ classDiagram
     ReservaFacade ..> CarritoService
     ReservaFacade ..> CartaService
     ReservaBuilder ..> ProductoDAO : precio desde la BD
+
+    %% ---- Decorator ----
+    class Cobro {
+        <<interface · Component>>
+        +etiqueta str
+        +monto_cop()* int
+        +descripcion()* str
+    }
+    class CobroBase {
+        <<ConcreteComponent>>
+        +monto_cop() int
+        +descripcion() str
+    }
+    class CobroDecorador {
+        <<abstract · Decorator>>
+        -Cobro _envuelto
+        +tasa_pct int
+        +descripcion() str
+    }
+    class ConDescuento { <<ConcreteDecorator>> +monto_cop() int }
+    class ConImpuestoConsumo { <<ConcreteDecorator>> +monto_cop() int }
+    class ConPropinaSugerida { <<ConcreteDecorator>> +monto_cop() int }
+    class cobro_decorator {
+        <<módulo>>
+        +porcentaje_de(monto_cop, tasa_pct)$ int
+        +armar_cadena(items, con_propina)$ list
+        +armar_cobro(items, con_propina)$ Cobro
+        +desglose(items, con_propina)$ dict
+    }
+    Cobro <|.. CobroBase
+    Cobro <|.. CobroDecorador
+    CobroDecorador <|-- ConDescuento
+    CobroDecorador <|-- ConImpuestoConsumo
+    CobroDecorador <|-- ConPropinaSugerida
+    CobroDecorador o-- Cobro : envuelve a otro Cobro
+    cobro_decorator ..> CobroBase : arma la cadena
+    ReservaFacade ..> cobro_decorator : total a pagar
     %% ---- capas ----
     class ClienteController { <<presentación>> }
     ClienteController --> ReservaFacade

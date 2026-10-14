@@ -4,10 +4,11 @@ from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, Form, Request
 
+from app import config
 from app.datos.modelos import Usuario
 from app.dependencias import auth_service, fachada
 from app.negocio.excepciones import NoAutorizadoError, NoEncontradoError, ReglaNegocioError
-from app.presentacion.comun import (avisar, entero, renderizar, redirigir, requiere_cliente,
+from app.presentacion.comun import (_cop, avisar, entero, renderizar, redirigir, requiere_cliente,
                                     usuario_actual, verificar_csrf)
 
 router = APIRouter()
@@ -63,7 +64,7 @@ def carta(request: Request, restaurante_id: int | None = None):
 @router.get("/reservar")
 def formulario_reserva(request: Request, restaurante_id: int | None = None, fecha: str = "",
                        hora: str = "", personas: str = "2", mesa_id: str = "", notas: str = "",
-                       usuario: Usuario = Depends(requiere_cliente)):
+                       propina: str = "", usuario: Usuario = Depends(requiere_cliente)):
     todos = fachada.listar_restaurantes()
     restaurante = None
     if restaurante_id is not None:
@@ -75,13 +76,15 @@ def formulario_reserva(request: Request, restaurante_id: int | None = None, fech
     return renderizar(request, "reservar.html", restaurantes=todos, restaurante=restaurante,
                       valores={"fecha": fecha or manana, "hora": hora, "personas": personas,
                                "mesa_id": mesa_id, "notas": notas},
-                      hoy=date.today().isoformat(), maximo=(date.today() + timedelta(days=180)).isoformat())
+                      hoy=date.today().isoformat(), maximo=(date.today() + timedelta(days=180)).isoformat(),
+                      cobro=fachada.cobro_pre_pedido(request.session, bool(propina)), propina=bool(propina),
+                      tasa_propina=config.TASA_PROPINA_SUGERIDA_PCT)
 
 
 @router.post("/reservar", dependencies=[Depends(verificar_csrf)])
 def crear_reserva(request: Request, restaurante_id: str = Form(""), fecha: str = Form(""), hora: str = Form(""),
                   personas: str = Form(""), mesa_id: str = Form(""), notas: str = Form(""),
-                  usuario: Usuario = Depends(requiere_cliente)):
+                  propina: str = Form(""), usuario: Usuario = Depends(requiere_cliente)):
     try:
         reserva = fachada.reservar_con_pre_pedido(usuario, {
             "restaurante_id": entero(restaurante_id, "restaurante"), "fecha": fecha, "hora": hora,
@@ -90,9 +93,13 @@ def crear_reserva(request: Request, restaurante_id: str = Form(""), fecha: str =
     except (ReglaNegocioError, NoEncontradoError) as error:
         avisar(request, str(error), "error")
         consulta = urlencode({"restaurante_id": restaurante_id, "fecha": fecha, "hora": hora,
-                              "personas": personas, "mesa_id": mesa_id, "notas": notas[:300]})
+                              "personas": personas, "mesa_id": mesa_id, "notas": notas[:300], "propina": propina})
         return redirigir(f"/reservar?{consulta}")
-    extra = f" Pre-pedido: {len(reserva.items)} plato(s)." if reserva.items else ""
+    extra = ""
+    if reserva.items:
+        cobro = fachada.cobro_de_reserva(reserva, bool(propina))     # calculado en el servidor con la cadena de decoradores
+        extra = (f" Pre-pedido: {len(reserva.items)} plato(s). Total a pagar estimado: {_cop(cobro['total_cop'])}"
+                 f"{' (propina incluida)' if propina else ''}.")
     avisar(request, f"¡Reserva #{reserva.id} creada! Queda PENDIENTE hasta que el restaurante la confirme.{extra}")
     return redirigir("/mis-reservas")
 

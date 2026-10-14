@@ -204,6 +204,29 @@
   $('paso-ant').addEventListener('click', () => irAPaso(pasoActual - 1));
   irAPaso(0);
 
+  // Total a pagar: el servidor lo calcula (cadena de decoradores); aquí solo se envía si se incluye la propina.
+  const propina = $('propina');
+  if (propina) {
+    const cop = (n) => (n < 0 ? '-' : '') + '$' + Math.abs(Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    propina.addEventListener('change', async () => {
+      try {
+        const r = await fetch(`/api/cobro?propina=${propina.checked}`, { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+        if (!r.ok) throw new Error('No se pudo recalcular el total.');
+        const d = await r.json();
+        const ul = $('cobro-lineas');
+        ul.replaceChildren(...d.lineas.map((l) => {
+          const li = document.createElement('li');
+          li.append(l.etiqueta + ' ', Object.assign(document.createElement('span'), { textContent: cop(l.monto_cop) }));
+          return li;
+        }));
+        const total = document.createElement('li');
+        total.className = 'total';
+        total.append('TOTAL A PAGAR ', Object.assign(document.createElement('span'), { id: 'cobro-total', textContent: cop(d.total_cop) }));
+        ul.appendChild(total);
+      } catch (e) { if (window.mostrarToast) window.mostrarToast(e.message, 'error'); }
+    });
+  }
+
   campoHora.value = form.dataset.horaInicial || '';
   campoMesa.value = form.dataset.mesaInicial || '';
   cargar();

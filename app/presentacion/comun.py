@@ -21,7 +21,8 @@ plantillas.env.globals.update(BRAND_NAME=config.BRAND_NAME, DIAS_SEMANA=config.D
 
 def _cop(valor: int) -> str:
     """Formato de pesos colombianos: 18000 → $18.000 (sin centavos)."""
-    return "$" + f"{int(valor):,}".replace(",", ".")
+    valor = int(valor)
+    return ("-" if valor < 0 else "") + "$" + f"{abs(valor):,}".replace(",", ".")
 
 
 def _url_imagen(nombre: str) -> str:

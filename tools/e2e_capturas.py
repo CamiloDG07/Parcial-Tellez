@@ -118,18 +118,18 @@ with sync_playwright() as p:
     assert cli.locator(".plato:visible").count() == 8
     cli.fill("#buscar-plato", "tira")
     assert cli.locator(".plato:visible").count() == 1
-    cli.fill("#cant-" + cli.locator(".plato:visible [data-agregar]").first.get_attribute("data-agregar"), "2")
+    cli.fill("#cant-" + cli.locator(".plato:visible [data-agregar]").first.get_attribute("data-agregar"), "8")
     cli.click(".plato:visible [data-agregar]")
-    cli.wait_for_function("document.getElementById('insignia-carrito').textContent === '2'")
+    cli.wait_for_function("document.getElementById('insignia-carrito').textContent === '8'")
     informe.append("carta: pestañas, búsqueda y agregar al pre-pedido OK")
     cli.fill("#buscar-plato", ""); cli.click(".pestana:has-text('ENTRADA')")
     cli.click(".plato:visible >> nth=0 >> [data-agregar]")
-    cli.wait_for_function("document.getElementById('insignia-carrito').textContent === '3'")
+    cli.wait_for_function("document.getElementById('insignia-carrito').textContent === '9'")
     cli.click("#abrir-carrito"); cli.wait_for_timeout(500)
     total_cajon = cli.inner_text("#carrito-total")
     captura(cli, "08_carta_y_cajon_pre_pedido", revisar=False)
     cli.keyboard.press("Escape")
-    cli.reload(); cli.wait_for_function("document.getElementById('insignia-carrito').textContent === '3'")
+    cli.reload(); cli.wait_for_function("document.getElementById('insignia-carrito').textContent === '9'")
 
     # ---------- asistente de reserva (pasos) ----------
     cli.goto(BASE + "/reservar?restaurante_id=1")
@@ -150,15 +150,22 @@ with sync_playwright() as p:
     captura(cli, "12_reservar_paso_pre_pedido", revisar=False)
     siguiente(cli)
     cli.fill("#notas", "Cumpleaños, una vela por favor")
+    # total a pagar calculado por el servidor con la cadena de decoradores (Decorator)
+    assert cli.inner_text("#cobro-total") == "$165.240", cli.inner_text("#cobro-total")      # 170.000 -10 % +8 %
+    assert "Descuento por pedido grande" in cli.inner_text("#cobro")
     captura(cli, "12b_reservar_paso_confirmar", revisar=False)
+    cli.check("#propina")
+    cli.wait_for_function("document.getElementById('cobro-total').textContent === '$181.764'")   # +10 % de propina
+    captura(cli, "12c_reservar_confirmar_con_propina", revisar=False)
     hora, mesa = cli.input_value("#campo-hora"), cli.input_value("#campo-mesa")
     fecha = cli.input_value("#fecha")
     cli.click("button:has-text('CONFIRMAR RESERVA')"); cli.wait_for_load_state()
     assert cli.url.endswith("/mis-reservas") and "PENDIENTE" in cli.content()
     assert total_cajon in cli.content()
+    assert "Total a pagar estimado: $181.764 (propina incluida)" in cli.content()
     cli.click("summary:has-text('plato')")
     captura(cli, "13_mis_reservas")
-    informe.append(f"asistente: 5 pasos recorridos; reserva creada con pre-pedido {total_cajon}")
+    informe.append(f"asistente: 5 pasos recorridos; reserva con pre-pedido {total_cajon} (a pagar $165.240; con propina $181.764)")
 
     # doble reserva de la misma mesa y hora (POST directo con el token de la sesión)
     token = cli.evaluate("document.querySelector('meta[name=csrf-token]').content")

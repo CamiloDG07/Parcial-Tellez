@@ -21,10 +21,12 @@
         <td data-etiqueta="Mesa">{{ f.mesa.numero }}{% if f.mesa.ubicacion %} · {{ f.mesa.ubicacion }}{% endif %}</td>
         <td data-etiqueta="Pre-pedido">
           {% if f.detalle %}
-          <details><summary>{{ f.total_cop|cop }} · {{ f.detalle|length }} plato{{ 's' if f.detalle|length > 1 }}</summary>
+          <details><summary>A pagar {{ f.cobro.total_cop|cop }} · {{ f.detalle|length }} plato{{ 's' if f.detalle|length > 1 }}</summary>
             <ul class="detalle-items">
               {% for d in f.detalle %}<li>{{ d.item.cantidad }} × {{ d.nombre }} <span>{{ d.item.subtotal_cop|cop }}</span></li>{% endfor %}
-              <li class="total">TOTAL <span>{{ f.total_cop|cop }}</span></li>
+              {% for l in f.cobro.lineas %}<li class="linea-cobro">{{ l.etiqueta }} <span>{{ l.monto_cop|cop }}</span></li>{% endfor %}
+              <li class="total">TOTAL A PAGAR <span>{{ f.cobro.total_cop|cop }}</span></li>
+              <li class="sugerencia">Propina sugerida, opcional y no incluida <span>{{ f.cobro.propina_sugerida_cop|cop }}</span></li>
             </ul></details>
           {% else %}—{% endif %}
         </td>

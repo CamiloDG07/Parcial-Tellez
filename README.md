@@ -53,6 +53,19 @@ contadores animados y barras que crecen en el panel. Con `prefers-reduced-motion
 infinita más rápida dura 2 s (límite de seguridad: 3 destellos/s). El formulario de reserva necesita JavaScript para
 cargar las horas disponibles.
 
+### Fase 4 (Decorator: total a pagar)
+
+`ReservaFacade` arma una cadena de decoradores sobre el subtotal del pre-pedido para mostrar el **total a pagar** en el paso 5
+del asistente, en "Mis reservas" y en el panel del administrador. Orden fijo: descuento → impuesto al consumo → propina sugerida
+(opcional, casilla en el formulario). Todo en pesos enteros, con una única regla de redondeo (`porcentaje_de`: porcentaje al peso
+más cercano, empates hacia arriba, aritmética entera). El cálculo es solo del servidor y **no se guarda nada nuevo**:
+`reserva_item.precio_unitario_cop` y los ingresos estimados siguen siendo el subtotal.
+
+Tasas (supuestos de demostración, configurables en `app/config.py`; **no se han verificado contra la normativa vigente**):
+`TASA_IMPUESTO_CONSUMO_PCT = 8`, `TASA_PROPINA_SUGERIDA_PCT = 10`, `DESCUENTO_PEDIDO_GRANDE_PCT = 10` desde
+`DESCUENTO_PEDIDO_GRANDE_MINIMO_COP = 150000`. Ejemplo: subtotal $170.000 → descuento −$17.000 → impuesto +$12.240 → **$165.240**;
+con propina +$16.524 → **$181.764**.
+
 Los controladores del cliente solo hablan con `ReservaFacade`; la fachada recibe `ReservaServiceProxy`, nunca el servicio real. Un DAO no importa negocio: `UsuarioDAO` recibe la fábrica de usuarios por inyección.
 
 ## Patrones de diseño
@@ -64,8 +77,9 @@ Los controladores del cliente solo hablan con `ReservaFacade`; la fachada recibe
 | Builder (creacional) | `ReservaBuilder` (+ `ReservaDirector`) | `app/negocio/patrones/creacionales/reserva_builder.py` |
 | Facade (estructural) | `ReservaFacade` | `app/negocio/patrones/estructurales/reserva_facade.py` |
 | Proxy de protección (estructural) | `ReservaServiceProxy` | `app/negocio/patrones/estructurales/reserva_proxy.py` |
+| Decorator (estructural) | `Cobro`, `CobroBase`, `CobroDecorador`, `ConDescuento`, `ConImpuestoConsumo`, `ConPropinaSugerida` | `app/negocio/patrones/estructurales/cobro_decorator.py` |
 
-Pruebas por patrón en `tests/test_patrones.py`. Diagramas Mermaid en `docs/`.
+Pruebas por patrón en `tests/test_patrones.py` (Decorator: `tests/test_fase4.py`). Diagramas Mermaid en `docs/`.
 
 ## Reglas de negocio
 
