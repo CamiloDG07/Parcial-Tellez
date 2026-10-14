@@ -150,6 +150,7 @@ with sync_playwright() as p:
     captura(cli, "12_reservar_paso_pre_pedido", revisar=False)
     siguiente(cli)
     cli.fill("#notas", "Cumpleaños, una vela por favor")
+    captura(cli, "12b_reservar_paso_confirmar", revisar=False)
     hora, mesa = cli.input_value("#campo-hora"), cli.input_value("#campo-mesa")
     fecha = cli.input_value("#fecha")
     cli.click("button:has-text('CONFIRMAR RESERVA')"); cli.wait_for_load_state()

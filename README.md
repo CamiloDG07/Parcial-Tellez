@@ -12,7 +12,9 @@ pip install -r requirements.txt
 python -m app.datos.seed && uvicorn app.main:app --reload     # http://127.0.0.1:8000
 ```
 
-Pruebas: `pytest -q`.  Variables: `SECRET_KEY` (firma de la sesión; el valor por defecto es solo para desarrollo) y `RESERVAS_DB` (ruta de la base).
+Pruebas: `pytest -q`.  E2E con navegador y capturas: `python tools/e2e_capturas.py http://localhost:8765 docs/capturas` (ver `docs/ESTADO.md`).
+
+Documentación: diagramas Mermaid en `docs/*.mmd` y PNG en `docs/diagramas/` (se regeneran con `tools/mmdc`: `npm install --prefix tools/mmdc @mermaid-js/mermaid-cli`, ver `tools/exportar_diagramas.sh`); capturas en `docs/capturas/`; guion del video en `docs/guion_video.md`.  Variables: `SECRET_KEY` (firma de la sesión; el valor por defecto es solo para desarrollo) y `RESERVAS_DB` (ruta de la base).
 
 ## Usuarios de demostración
 
