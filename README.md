@@ -127,3 +127,5 @@ La carta (`carta_demo.json`: 26 platos, 3 categorías, precios en COP) parte del
 | `semifreddo-al-limone.jpg` | [Semifreddo nocciola.jpg](https://commons.wikimedia.org/wiki/File:Semifreddo_nocciola.jpg) | Daniele2399 | CC BY-SA 4.0 |
 | `zeppole.jpg` | [Zeppole stacked on a plate.jpg](https://commons.wikimedia.org/wiki/File:Zeppole_stacked_on_a_plate.jpg) | Luca Sartoni | CC BY-SA 2.0 |
 | `torta-della-nonna.jpg` | [Torta della nonna.jpg](https://commons.wikimedia.org/wiki/File:Torta_della_nonna.jpg) | fugzu from Pistoia, Italia | CC BY 2.0 |
+#   P a r c i a l - T e l l e z  
+ 
