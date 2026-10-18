@@ -18,7 +18,7 @@ Ten abiertos: el editor en la raíz del proyecto, `docs/diagramas/*.png`, y la a
 ## 1. Presentación (0:30)
 - Proyecto: reservas de restaurantes **MIDNIGHT DINER** (marca ficticia), FastAPI + Jinja2 + SQLite sin ORM, para Patrones de Diseño de Software.
 - Roles: `cliente` y `administrador`. Pantalla: `docs/capturas/02_inicio_1440.png` o la app abierta en el inicio.
-- Decir: la carta parte del menú de PIZZATRO (JuanPZ28), usada con su autorización.
+- Decir: son 5 restaurantes, cada uno con su carta (62 platos y 62 fotos con crédito de Wikimedia Commons); las cartas 1 y 5 parten del menú de PIZZATRO (JuanPZ28), usado con su autorización, y las cartas 2, 3 y 4 son texto propio.
 
 ## 2. Arquitectura de tres capas (1:10)
 Mostrar `docs/diagramas/arquitectura_tres_capas.png` y luego el árbol de `app/`:
@@ -79,7 +79,7 @@ Mostrar `docs/diagramas/diagrama_control_patrones.png` y recorrerlo de izquierda
 ## 8. Demostración (2:15)
 Credenciales: `cliente@demo.com / Cliente123!`, `admin@demo.com / Admin123!`.
 1. **Cliente** (ventana 1): iniciar sesión → redirige a `/restaurantes` (Factory Method). Mostrar el filtro por cocina.
-2. `/carta?restaurante_id=1`: pestaña POSTRE, buscar "tira", agregar ×2 (animación al carrito, insignia), abrir el cajón y ver el total.
+2. `/carta?restaurante_id=1`: pestaña POSTRE, buscar "cannoli", agregar ×2 (animación al carrito, insignia), abrir el cajón y ver el total.
 3. `/reservar?restaurante_id=1`: recorrer los 5 pasos. En el paso 2 intentar avanzar sin hora (error). Elegir hora, mesa en el plano (libre = verde, ocupada = rojo), ver el pre-pedido y, en el paso 5, el **total a pagar** con descuento e impuesto; marcar la casilla de propina y ver cómo cambia el total (lo recalcula el servidor). Confirmar con una nota.
 4. `/mis-reservas`: estado `PENDIENTE` y detalle del pre-pedido con el desglose (subtotal, descuento, impuesto, total a pagar y propina sugerida no incluida).
 5. Repetir la misma mesa y hora → mensaje "La mesa ya está reservada" (Builder). Probar una hora de madrugada → rechazo por horario.
@@ -88,6 +88,6 @@ Credenciales: `cliente@demo.com / Cliente123!`, `admin@demo.com / Admin123!`.
 8. Seguridad: como cliente abrir `/admin` → "ACCESO DENEGADO" (guarda de rol del controlador). En la terminal del servidor se ven las líneas `reservas.proxy PERMITIDO cliente#… crear_reserva`. El `DENEGADO` del proxy (cliente que cancela la reserva de otro) no se puede provocar desde la interfaz: mostrarlo con `pytest tests/test_patrones.py -k proxy -v`.
 
 ## 9. Pruebas y cierre (0:45)
-- Ejecutar `pytest -q`: 110 pruebas (reglas de negocio, una por patrón incluido el Decorator, web por rol, Fases 2 y 4).
+- Ejecutar `pytest -q`: 154 pruebas (reglas de negocio, una por patrón incluido el Decorator, web por rol, Fases 2, 4 y 5, cartas por restaurante).
 - Cierre: tres capas + DAO; creacionales **Singleton, Factory Method y Builder**; estructurales **Facade, Proxy y Decorator**; la lógica de negocio solo se construye por el Builder y solo se alcanza a través del Proxy.
 - Mencionar limitaciones con honestidad: el formulario de reserva necesita JavaScript; el cerrojo contra doble reserva es de un solo proceso; no se probó con varios workers.
