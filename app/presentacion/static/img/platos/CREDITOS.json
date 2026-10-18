@@ -1,9 +1,9 @@
 {
   "bruschetta-clasica": {
-    "archivo": "File:A typical Maltese bruschetta with fresh Mediterranean ingredients.jpg",
-    "autor": "Patrickfarrugia",
-    "licencia": "CC BY-SA 4.0",
-    "pagina": "https://commons.wikimedia.org/wiki/File:A_typical_Maltese_bruschetta_with_fresh_Mediterranean_ingredients.jpg"
+    "archivo": "File:Bruschetta at The Bar at MacArthur Place - Sarah Stierch.jpg",
+    "autor": "Missvain",
+    "licencia": "CC BY 4.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Bruschetta_at_The_Bar_at_MacArthur_Place_-_Sarah_Stierch.jpg"
   },
   "ensalada-caprese": {
     "archivo": "File:Caprese salad in homemade.jpg",
@@ -12,16 +12,16 @@
     "pagina": "https://commons.wikimedia.org/wiki/File:Caprese_salad_in_homemade.jpg"
   },
   "carpaccio-di-manzo": {
-    "archivo": "File:Carpaccio Cipriani.jpg",
-    "autor": "Nurban",
-    "licencia": "CC0",
-    "pagina": "https://commons.wikimedia.org/wiki/File:Carpaccio_Cipriani.jpg"
+    "archivo": "File:Beef Carpaccio (3466985953).jpg",
+    "autor": "Mack Male from Edmonton, AB, Canada",
+    "licencia": "CC BY-SA 2.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Beef_Carpaccio_(3466985953).jpg"
   },
   "calamares-fritti": {
-    "archivo": "File:Fried Calamari Rings.jpg",
-    "autor": "Maksym Kozlenko",
-    "licencia": "CC BY-SA 4.0",
-    "pagina": "https://commons.wikimedia.org/wiki/File:Fried_Calamari_Rings.jpg"
+    "archivo": "File:Calamari fritti in Izola Isola (52976884396).jpg",
+    "autor": "domjisch from Graz, Austria",
+    "licencia": "CC BY 2.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Calamari_fritti_in_Izola_Isola_(52976884396).jpg"
   },
   "arancini-di-risotto": {
     "archivo": "File:Arancini 002.jpg",
@@ -42,10 +42,10 @@
     "pagina": "https://commons.wikimedia.org/wiki/File:Minestrone_soup.jpg"
   },
   "burrata-con-tomates-cherry": {
-    "archivo": "File:Burrata2.jpg",
-    "autor": "Popo le Chien",
-    "licencia": "CC0",
-    "pagina": "https://commons.wikimedia.org/wiki/File:Burrata2.jpg"
+    "archivo": "File:Burrata salad with cherry tomatoes and rocket from La Mensa Grill and Bar Plaza88.jpg",
+    "autor": "Peachyeung316",
+    "licencia": "CC BY-SA 4.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Burrata_salad_with_cherry_tomatoes_and_rocket_from_La_Mensa_Grill_and_Bar_Plaza88.jpg"
   },
   "antipasto-misto": {
     "archivo": "File:Antipasto Misto Con Bruschette.jpg",
@@ -78,10 +78,10 @@
     "pagina": "https://commons.wikimedia.org/wiki/File:Espaguetis_carbonara.jpg"
   },
   "fettuccine-alfredo": {
-    "archivo": "File:Fiamma - Fettuccine with Alfredo Sauce.jpg",
-    "autor": "Calgary Reviews",
+    "archivo": "File:Fettuccine Alfredo.jpg",
+    "autor": "Robert Banh",
     "licencia": "CC BY 2.0",
-    "pagina": "https://commons.wikimedia.org/wiki/File:Fiamma_-_Fettuccine_with_Alfredo_Sauce.jpg"
+    "pagina": "https://commons.wikimedia.org/wiki/File:Fettuccine_Alfredo.jpg"
   },
   "lasagna-alla-bolognese": {
     "archivo": "File:Meaty Lasagna 8of8 (8736299782).jpg",
@@ -120,10 +120,10 @@
     "pagina": "https://commons.wikimedia.org/wiki/File:Panna_Cotta_with_cream_and_garnish.jpg"
   },
   "cannoli-siciliani": {
-    "archivo": "File:Cannoli from Brocato's New Orleans 01.jpg",
-    "autor": "Infrogmation of New Orleans",
-    "licencia": "CC BY-SA 4.0",
-    "pagina": "https://commons.wikimedia.org/wiki/File:Cannoli_from_Brocato%27s_New_Orleans_01.jpg"
+    "archivo": "File:Tiny sicilian cannoli at lunch (5071817409).jpg",
+    "autor": "judywitts",
+    "licencia": "CC BY 2.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Tiny_sicilian_cannoli_at_lunch_(5071817409).jpg"
   },
   "affogato-al-caffe": {
     "archivo": "File:Vinoteca, Smithfield, London (4485849609).jpg",
@@ -154,5 +154,221 @@
     "autor": "fugzu from Pistoia, Italia",
     "licencia": "CC BY 2.0",
     "pagina": "https://commons.wikimedia.org/wiki/File:Torta_della_nonna.jpg"
+  },
+  "empanadas-colombianas": {
+    "archivo": "File:Empanada colombiana.jpg",
+    "autor": "Francesc Fort",
+    "licencia": "CC BY-SA 4.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Empanada_colombiana.jpg"
+  },
+  "arepa-con-queso": {
+    "archivo": "File:Arepa de chocolo.jpg",
+    "autor": "Nelson Fernando Sotelo Castro",
+    "licencia": "CC BY 2.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Arepa_de_chocolo.jpg"
+  },
+  "patacones": {
+    "archivo": "File:Patacones - Barranquilla.jpg",
+    "autor": "Jdvillalobos",
+    "licencia": "CC BY 3.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Patacones_-_Barranquilla.jpg"
+  },
+  "ajiaco-santafereno": {
+    "archivo": "File:Ajiaco la puerta falsa.jpg",
+    "autor": "Cesar.cely",
+    "licencia": "CC BY-SA 4.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Ajiaco_la_puerta_falsa.jpg"
+  },
+  "bandeja-paisa": {
+    "archivo": "File:Bandeja paisa, plato Colombiano.jpg",
+    "autor": "Wilfredor",
+    "licencia": "CC0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Bandeja_paisa,_plato_Colombiano.jpg"
+  },
+  "sancocho-de-gallina": {
+    "archivo": "File:Sancocho cruzado de gallina, rabo y costilla con arepa.jpg",
+    "autor": "Rodolfo pimentel",
+    "licencia": "CC BY-SA 4.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Sancocho_cruzado_de_gallina,_rabo_y_costilla_con_arepa.jpg"
+  },
+  "brevas-en-almibar": {
+    "archivo": "File:Incir Kompostosu (Fig in Syrup).JPG",
+    "autor": "Miansari66",
+    "licencia": "CC0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Incir_Kompostosu_(Fig_in_Syrup).JPG"
+  },
+  "limonada-de-coco": {
+    "archivo": "File:Coconut Drink (Unsplash).jpg",
+    "autor": "Alexander Mils alexandermils",
+    "licencia": "CC0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Coconut_Drink_(Unsplash).jpg"
+  },
+  "cafe-colombiano": {
+    "archivo": "File:A small cup of coffee.JPG",
+    "autor": "Julius Schorzman",
+    "licencia": "CC BY-SA 2.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:A_small_cup_of_coffee.JPG"
+  },
+  "agua-de-panela": {
+    "archivo": "File:Aguapanela-Colombiana-3-2.jpg",
+    "autor": "Mappa Stellae",
+    "licencia": "CC BY-SA 4.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Aguapanela-Colombiana-3-2.jpg"
+  },
+  "chocolate-con-queso": {
+    "archivo": "File:Colombian classic - hot chocolate with arepa and cheese (in porcelain with pink flowers).jpg",
+    "autor": "Quinn Comendant",
+    "licencia": "CC BY-SA 2.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Colombian_classic_-_hot_chocolate_with_arepa_and_cheese_(in_porcelain_with_pink_flowers).jpg"
+  },
+  "edamame": {
+    "archivo": "File:Edamame by jark.jpg",
+    "autor": "jark",
+    "licencia": "CC BY-SA 2.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Edamame_by_jark.jpg"
+  },
+  "gyozas-de-cerdo": {
+    "archivo": "File:Pork gyoza - Massachusetts.jpg",
+    "autor": "Daderot",
+    "licencia": "CC0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Pork_gyoza_-_Massachusetts.jpg"
+  },
+  "tempura-de-camaron": {
+    "archivo": "File:Tempura Prawns at Southport Surf Life Saving Club, Main Beach, Queensland.jpg",
+    "autor": "Kgbo",
+    "licencia": "CC BY-SA 4.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Tempura_Prawns_at_Southport_Surf_Life_Saving_Club,_Main_Beach,_Queensland.jpg"
+  },
+  "sopa-miso": {
+    "archivo": "File:Miso Soup 001.jpg",
+    "autor": "Ocdp",
+    "licencia": "CC0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Miso_Soup_001.jpg"
+  },
+  "ramen-tonkotsu": {
+    "archivo": "File:Tonkotsu Ramen - Goemon Ramen Bar 2023-06-06.jpg",
+    "autor": "Andy Li",
+    "licencia": "CC0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Tonkotsu_Ramen_-_Goemon_Ramen_Bar_2023-06-06.jpg"
+  },
+  "california-roll": {
+    "archivo": "File:California Sushi mit Kaviar (26545022496).jpg",
+    "autor": "Tim Reckmann from Hamm, Deutschland",
+    "licencia": "CC BY 2.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:California_Sushi_mit_Kaviar_(26545022496).jpg"
+  },
+  "sashimi-de-salmon": {
+    "archivo": "File:Salmon sashimi Yuichiro Haga.jpeg",
+    "autor": "Yuichiro Haga",
+    "licencia": "CC BY 2.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Salmon_sashimi_Yuichiro_Haga.jpeg"
+  },
+  "nigiri-de-salmon": {
+    "archivo": "File:Nigiri Sushi (25966163204).jpg",
+    "autor": "Tim Reckmann from Hamm, Deutschland",
+    "licencia": "CC BY 2.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Nigiri_Sushi_(25966163204).jpg"
+  },
+  "yakisoba-de-pollo": {
+    "archivo": "File:Chicken yakisoba Merelymel13.jpg",
+    "autor": "Merelymel13",
+    "licencia": "CC BY-SA 2.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Chicken_yakisoba_Merelymel13.jpg"
+  },
+  "mochi-helado": {
+    "archivo": "File:Mochi Ice Cream.jpg",
+    "autor": "Charles Nguyen",
+    "licencia": "Public domain",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Mochi_Ice_Cream.jpg"
+  },
+  "dorayaki": {
+    "archivo": "File:Dorayaki 004.jpg",
+    "autor": "Ocdp",
+    "licencia": "CC0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Dorayaki_004.jpg"
+  },
+  "cheesecake-de-matcha": {
+    "archivo": "File:Olea Matcha Cheesecake with olive oil - Olea 2025-07-03.jpg",
+    "autor": "Andy Li",
+    "licencia": "CC0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Olea_Matcha_Cheesecake_with_olive_oil_-_Olea_2025-07-03.jpg"
+  },
+  "te-verde-japones": {
+    "archivo": "File:2018 Uji lightly steamed sencha - first infusion.jpg",
+    "autor": "Difference engine",
+    "licencia": "CC BY-SA 4.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:2018_Uji_lightly_steamed_sencha_-_first_infusion.jpg"
+  },
+  "provoleta-a-la-parrilla": {
+    "archivo": "File:Provoleta con cazuela (porción).jpg",
+    "autor": "Horacio Cambeiro",
+    "licencia": "CC BY 3.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Provoleta_con_cazuela_(porci%C3%B3n).jpg"
+  },
+  "chorizo-criollo": {
+    "archivo": "File:Chorizo a la parrilla de Argentina.jpg",
+    "autor": "Horacio Cambeiro",
+    "licencia": "CC BY 3.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Chorizo_a_la_parrilla_de_Argentina.jpg"
+  },
+  "mazorca-asada": {
+    "archivo": "File:Grilled Corn on the cob.JPG",
+    "autor": "Namitakhaire",
+    "licencia": "CC BY-SA 4.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Grilled_Corn_on_the_cob.JPG"
+  },
+  "churrasco-de-res": {
+    "archivo": "File:DFC 2244 Juicy grilled steak smothered in savory brown gravy served with roasted potatoes sautéed vegetables and a crisp mixed salad.jpg",
+    "autor": "PattayaPatrol",
+    "licencia": "CC BY-SA 4.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:DFC_2244_Juicy_grilled_steak_smothered_in_savory_brown_gravy_served_with_roasted_potatoes_saut%C3%A9ed_vegetables_and_a_crisp_mixed_salad.jpg"
+  },
+  "picana-a-la-brasa": {
+    "archivo": "File:Picanha (14759358544).jpg",
+    "autor": "Christian Benseler",
+    "licencia": "CC BY 2.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Picanha_(14759358544).jpg"
+  },
+  "costillas-bbq": {
+    "archivo": "File:BBQ RIBS pork side ribs.jpg",
+    "autor": "WorldwrestlingfederationVKM",
+    "licencia": "CC BY-SA 3.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:BBQ_RIBS_pork_side_ribs.jpg"
+  },
+  "pollo-a-las-brasas": {
+    "archivo": "File:Pollo a la brasa peruano.jpg",
+    "autor": "Manuel González Olaechea",
+    "licencia": "CC BY-SA 3.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Pollo_a_la_brasa_peruano.jpg"
+  },
+  "salmon-a-la-parrilla": {
+    "archivo": "File:Grilled plated salmon fillet.jpg",
+    "autor": "DanaTentis",
+    "licencia": "CC0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Grilled_plated_salmon_fillet.jpg"
+  },
+  "brownie-con-helado": {
+    "archivo": "File:Walnut brownie with ice-cream.jpg",
+    "autor": "Sirsendu.mohanta",
+    "licencia": "CC BY-SA 4.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Walnut_brownie_with_ice-cream.jpg"
+  },
+  "flan-de-caramelo": {
+    "archivo": "File:Crème caramel at NB Steak JK.jpg",
+    "autor": "Oleg Yunakov",
+    "licencia": "CC BY-SA 4.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Cr%C3%A8me_caramel_at_NB_Steak_JK.jpg"
+  },
+  "copa-de-vino-tinto": {
+    "archivo": "File:A glass of red wine.jpg",
+    "autor": "Davide Restivo from Lenzburg, Aarau, Switzerland",
+    "licencia": "CC BY-SA 2.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:A_glass_of_red_wine.jpg"
+  },
+  "limonada-de-hierbabuena": {
+    "archivo": "File:Homemade Mint Lemonade,Bangladesh.jpg",
+    "autor": "Evening42",
+    "licencia": "CC BY-SA 4.0",
+    "pagina": "https://commons.wikimedia.org/wiki/File:Homemade_Mint_Lemonade,Bangladesh.jpg"
   }
 }

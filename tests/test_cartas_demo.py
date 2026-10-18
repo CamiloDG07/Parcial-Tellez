@@ -54,3 +54,14 @@ def test_el_seed_carga_la_carta_de_cada_restaurante_y_no_las_mezcla(bd):
     for r in RestauranteDAO().listar():
         esperados = {p["nombre"] for c in cartas.get(r.id, {"categorias": []})["categorias"] for p in c["productos"]}
         assert {p.nombre for p in dao.listar_por_restaurante(r.id)} == esperados, r.nombre
+
+
+def test_cada_restaurante_del_seed_tiene_carta_con_al_menos_10_platos_y_3_categorias():
+    """Cada restaurante sembrado (1 a 5) tiene su carta, con ≥ 10 platos y ≥ 3 categorías."""
+    ids_con_carta = {rid for rid, _ in _cartas()}
+    for rid, carta in _cartas():
+        platos = [p for cat in carta["categorias"] for p in cat["productos"]]
+        assert len(platos) >= 10, f"la carta {rid} tiene solo {len(platos)} platos"
+        assert len(carta["categorias"]) >= 3, f"la carta {rid} tiene solo {len(carta['categorias'])} categorías"
+    ids_restaurantes = set(range(1, len(seed.RESTAURANTES) + 1))      # el seed les asigna id 1..N en orden
+    assert ids_restaurantes <= ids_con_carta, f"restaurantes sin carta: {sorted(ids_restaurantes - ids_con_carta)}"

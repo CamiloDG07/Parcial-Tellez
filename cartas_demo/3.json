@@ -1,0 +1,110 @@
+{
+  "restaurante_id": 3,
+  "restaurante": "Pasillo Este Sushi",
+  "origen": "Carta japonesa de MIDNIGHT DINER (texto propio del proyecto; precios de demostración).",
+  "moneda": "COP (pesos enteros)",
+  "categorias": [
+    {
+      "nombre": "Entrada",
+      "orden": 1,
+      "productos": [
+        {
+          "nombre": "Edamame",
+          "descripcion": "Vainas de soya al vapor con sal marina.",
+          "precio_cop": 14000,
+          "slug_foto": "edamame"
+        },
+        {
+          "nombre": "Gyozas de Cerdo",
+          "descripcion": "Seis empanadillas japonesas de cerdo y repollo, selladas a la plancha.",
+          "precio_cop": 22000,
+          "slug_foto": "gyozas-de-cerdo"
+        },
+        {
+          "nombre": "Tempura de Camarón",
+          "descripcion": "Camarones en tempura ligera con salsa tentsuyu.",
+          "precio_cop": 28000,
+          "slug_foto": "tempura-de-camaron"
+        },
+        {
+          "nombre": "Sopa Miso",
+          "descripcion": "Caldo dashi con pasta de miso, tofu, algas wakame y cebollín.",
+          "precio_cop": 12000,
+          "slug_foto": "sopa-miso"
+        }
+      ]
+    },
+    {
+      "nombre": "Plato fuerte",
+      "orden": 2,
+      "productos": [
+        {
+          "nombre": "Ramen Tonkotsu",
+          "descripcion": "Caldo cremoso de cerdo, fideos, huevo marinado, chashu y cebollín.",
+          "precio_cop": 38000,
+          "slug_foto": "ramen-tonkotsu"
+        },
+        {
+          "nombre": "California Roll",
+          "descripcion": "Ocho piezas de roll con cangrejo, aguacate y pepino, cubiertas de ajonjolí.",
+          "precio_cop": 32000,
+          "slug_foto": "california-roll"
+        },
+        {
+          "nombre": "Sashimi de Salmón",
+          "descripcion": "Ocho láminas de salmón fresco con wasabi, jengibre y salsa de soya.",
+          "precio_cop": 42000,
+          "slug_foto": "sashimi-de-salmon"
+        },
+        {
+          "nombre": "Nigiri de Salmón",
+          "descripcion": "Bocado de arroz de sushi con una lámina de salmón fresco.",
+          "precio_cop": 46000,
+          "slug_foto": "nigiri-de-salmon"
+        },
+        {
+          "nombre": "Yakisoba de Pollo",
+          "descripcion": "Fideos salteados con pollo, repollo, zanahoria y salsa yakisoba.",
+          "precio_cop": 34000,
+          "slug_foto": "yakisoba-de-pollo"
+        }
+      ]
+    },
+    {
+      "nombre": "Postre",
+      "orden": 3,
+      "productos": [
+        {
+          "nombre": "Mochi Helado",
+          "descripcion": "Tres bolitas de mochi rellenas de helado de vainilla, fresa y té verde.",
+          "precio_cop": 16000,
+          "slug_foto": "mochi-helado"
+        },
+        {
+          "nombre": "Dorayaki",
+          "descripcion": "Dos tortitas esponjosas rellenas de pasta dulce de frijol rojo.",
+          "precio_cop": 14000,
+          "slug_foto": "dorayaki"
+        },
+        {
+          "nombre": "Cheesecake de Matcha",
+          "descripcion": "Cheesecake cremoso con té verde matcha sobre base de galleta.",
+          "precio_cop": 18000,
+          "slug_foto": "cheesecake-de-matcha"
+        }
+      ]
+    },
+    {
+      "nombre": "Bebida",
+      "orden": 4,
+      "productos": [
+        {
+          "nombre": "Té Verde Japonés",
+          "descripcion": "Tetera individual de té verde sencha, servido caliente.",
+          "precio_cop": 8000,
+          "slug_foto": "te-verde-japones"
+        }
+      ]
+    }
+  ]
+}

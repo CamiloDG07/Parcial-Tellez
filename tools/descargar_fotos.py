@@ -98,7 +98,7 @@ def centro_del_plato(imagen: Image.Image) -> tuple[float, float]:
 
 def recortar_16_10(imagen: Image.Image, centro: list[float] | None = None) -> Image.Image:
     """Recorta a 16:10 con la ventana centrada en el plato (limitada a los bordes de la foto).
-    `centro` opcional: [x, y] o [x, y, zoom] a mano (zoom > 1 acerca el recorte)."""
+    `centro` opcional: [x, y], [x, y, zoom] o [x, y, zoom, gamma] a mano (zoom > 1 acerca el recorte)."""
     ancho, alto = imagen.size
     cx, cy = (centro[0], centro[1]) if centro else centro_del_plato(imagen)
     zoom = centro[2] if centro and len(centro) > 2 else 1.0
@@ -109,9 +109,11 @@ def recortar_16_10(imagen: Image.Image, centro: list[float] | None = None) -> Im
     return imagen.crop((int(x0), int(y0), int(x0 + ancho_v), int(y0 + alto_v)))
 
 
-def homogeneizar(imagen: Image.Image) -> Image.Image:
+def homogeneizar(imagen: Image.Image, gamma: float = 1.0) -> Image.Image:
     """Auto-contraste suave (mezcla 35 % con el original), calidez leve y nitidez suave, iguales para todas las fotos."""
     mejorada = Image.blend(imagen, ImageOps.autocontrast(imagen, cutoff=1), 0.35)
+    if gamma != 1.0:      # aclarar (gamma < 1) fotos oscuras: ajuste manual por plato en fotos_centros.json (4.º valor)
+        mejorada = mejorada.point(lambda v: int(255 * (v / 255) ** gamma))
     r, g, b = mejorada.split()
     mejorada = Image.merge("RGB", (r.point(lambda v: min(255, int(v * 1.02))), g, b.point(lambda v: int(v * 0.98))))
     return mejorada.filter(ImageFilter.UnsharpMask(radius=1.2, percent=60, threshold=3))
@@ -130,7 +132,8 @@ def preparar(ii: dict, centro: list[float] | None = None) -> tuple[bytes, bytes]
     """Devuelve (800×500, 400×250) ya procesadas."""
     datos = con_reintentos(lambda: urllib.request.urlopen(urllib.request.Request(ii["thumburl"], headers=UA), timeout=90).read())
     imagen = Image.open(io.BytesIO(datos)).convert("RGB")
-    grande = homogeneizar(recortar_16_10(imagen, centro).resize((800, 500), Image.LANCZOS))
+    gamma = centro[3] if centro and len(centro) > 3 else 1.0
+    grande = homogeneizar(recortar_16_10(imagen, centro).resize((800, 500), Image.LANCZOS), gamma)
     chica = grande.resize((400, 250), Image.LANCZOS).filter(ImageFilter.UnsharpMask(radius=0.8, percent=40, threshold=3))
     return comprimir(grande, 250), comprimir(chica, 100)
 
@@ -143,7 +146,8 @@ def main() -> None:
     previos = json.loads(archivo_creditos.read_text(encoding="utf-8")) if archivo_creditos.exists() else {}
     solo = set(sys.argv[1:])                      # opcional: regenerar solo estos slugs
     creditos, fallos = {k: v for k, v in previos.items() if solo and k not in solo}, []
-    for slug, consulta in CONSULTAS.items():
+    for slug in list(dict.fromkeys([*CONSULTAS, *elegidas])):
+        consulta = CONSULTAS.get(slug, slug.replace("-", " "))
         if solo and slug not in solo:
             continue
         try:

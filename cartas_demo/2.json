@@ -1,0 +1,98 @@
+{
+  "restaurante_id": 2,
+  "restaurante": "La Cocina del Turno Noche",
+  "origen": "Carta criolla de MIDNIGHT DINER (texto propio del proyecto; precios de demostración).",
+  "moneda": "COP (pesos enteros)",
+  "categorias": [
+    {
+      "nombre": "Entrada",
+      "orden": 1,
+      "productos": [
+        {
+          "nombre": "Empanadas Colombianas",
+          "descripcion": "Tres empanadas de maíz rellenas de carne y papa, con ají casero.",
+          "precio_cop": 14000,
+          "slug_foto": "empanadas-colombianas"
+        },
+        {
+          "nombre": "Arepa con Queso",
+          "descripcion": "Arepa de maíz asada con queso campesino derretido y mantequilla.",
+          "precio_cop": 12000,
+          "slug_foto": "arepa-con-queso"
+        },
+        {
+          "nombre": "Patacones",
+          "descripcion": "Plátano verde frito y aplastado, crocante y dorado, servido en plato.",
+          "precio_cop": 16000,
+          "slug_foto": "patacones"
+        }
+      ]
+    },
+    {
+      "nombre": "Plato fuerte",
+      "orden": 2,
+      "productos": [
+        {
+          "nombre": "Ajiaco Santafereño",
+          "descripcion": "Sopa de tres papas con pollo, mazorca, alcaparras, crema y aguacate.",
+          "precio_cop": 34000,
+          "slug_foto": "ajiaco-santafereno"
+        },
+        {
+          "nombre": "Bandeja Paisa",
+          "descripcion": "Frijoles, arroz, chicharrón, carne molida, chorizo, huevo, plátano maduro y arepa.",
+          "precio_cop": 44000,
+          "slug_foto": "bandeja-paisa"
+        },
+        {
+          "nombre": "Sancocho de Gallina",
+          "descripcion": "Caldo de gallina con yuca, plátano, mazorca y papa, con arroz blanco.",
+          "precio_cop": 36000,
+          "slug_foto": "sancocho-de-gallina"
+        }
+      ]
+    },
+    {
+      "nombre": "Postre",
+      "orden": 3,
+      "productos": [
+        {
+          "nombre": "Brevas en Almíbar",
+          "descripcion": "Brevas (higos) cocidas lentamente en almíbar con frutos secos, postre tradicional.",
+          "precio_cop": 14000,
+          "slug_foto": "brevas-en-almibar"
+        }
+      ]
+    },
+    {
+      "nombre": "Bebida",
+      "orden": 4,
+      "productos": [
+        {
+          "nombre": "Limonada de Coco",
+          "descripcion": "Limonada cremosa con crema de coco, muy fría.",
+          "precio_cop": 11000,
+          "slug_foto": "limonada-de-coco"
+        },
+        {
+          "nombre": "Café Colombiano",
+          "descripcion": "Café filtrado de origen colombiano, servido caliente.",
+          "precio_cop": 7000,
+          "slug_foto": "cafe-colombiano"
+        },
+        {
+          "nombre": "Agua de Panela con Queso y Pan",
+          "descripcion": "Agua de panela caliente acompañada de queso fresco y pan, como se toma en casa.",
+          "precio_cop": 8000,
+          "slug_foto": "agua-de-panela"
+        },
+        {
+          "nombre": "Chocolate con Queso y Arepa",
+          "descripcion": "Chocolate caliente espeso, arepa y queso fresco para mojar, un clásico santafereño.",
+          "precio_cop": 12000,
+          "slug_foto": "chocolate-con-queso"
+        }
+      ]
+    }
+  ]
+}

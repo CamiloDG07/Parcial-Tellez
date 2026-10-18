@@ -1,0 +1,104 @@
+{
+  "restaurante_id": 4,
+  "restaurante": "Cámara 04 Parrilla",
+  "origen": "Carta de parrilla de MIDNIGHT DINER (texto propio del proyecto; precios de demostración).",
+  "moneda": "COP (pesos enteros)",
+  "categorias": [
+    {
+      "nombre": "Entrada",
+      "orden": 1,
+      "productos": [
+        {
+          "nombre": "Provoleta a la Parrilla",
+          "descripcion": "Queso provolone fundido a las brasas con orégano y aceite de oliva.",
+          "precio_cop": 26000,
+          "slug_foto": "provoleta-a-la-parrilla"
+        },
+        {
+          "nombre": "Chorizo Criollo",
+          "descripcion": "Chorizo de cerdo asado a las brasas con arepa y limón.",
+          "precio_cop": 18000,
+          "slug_foto": "chorizo-criollo"
+        },
+        {
+          "nombre": "Mazorca Asada",
+          "descripcion": "Mazorca tierna a las brasas con mantequilla y queso rallado.",
+          "precio_cop": 14000,
+          "slug_foto": "mazorca-asada"
+        }
+      ]
+    },
+    {
+      "nombre": "Plato fuerte",
+      "orden": 2,
+      "productos": [
+        {
+          "nombre": "Churrasco de Res",
+          "descripcion": "Corte de res de 300 g a las brasas con papas rústicas y chimichurri.",
+          "precio_cop": 62000,
+          "slug_foto": "churrasco-de-res"
+        },
+        {
+          "nombre": "Picaña a la Brasa",
+          "descripcion": "Picaña de 300 g asada lentamente, con yuca frita y ensalada.",
+          "precio_cop": 68000,
+          "slug_foto": "picana-a-la-brasa"
+        },
+        {
+          "nombre": "Costillas BBQ",
+          "descripcion": "Costillas de cerdo glaseadas en salsa BBQ con papas y ensalada de repollo.",
+          "precio_cop": 58000,
+          "slug_foto": "costillas-bbq"
+        },
+        {
+          "nombre": "Pollo a las Brasas",
+          "descripcion": "Medio pollo marinado en hierbas, asado a las brasas, con papas.",
+          "precio_cop": 42000,
+          "slug_foto": "pollo-a-las-brasas"
+        },
+        {
+          "nombre": "Salmón a la Parrilla",
+          "descripcion": "Filete de salmón a la parrilla con vegetales salteados y limón.",
+          "precio_cop": 56000,
+          "slug_foto": "salmon-a-la-parrilla"
+        }
+      ]
+    },
+    {
+      "nombre": "Postre",
+      "orden": 3,
+      "productos": [
+        {
+          "nombre": "Brownie con Helado",
+          "descripcion": "Brownie tibio de chocolate con helado de vainilla y salsa de chocolate.",
+          "precio_cop": 18000,
+          "slug_foto": "brownie-con-helado"
+        },
+        {
+          "nombre": "Flan de Caramelo",
+          "descripcion": "Flan casero de huevo con caramelo y crema chantilly.",
+          "precio_cop": 14000,
+          "slug_foto": "flan-de-caramelo"
+        }
+      ]
+    },
+    {
+      "nombre": "Bebida",
+      "orden": 4,
+      "productos": [
+        {
+          "nombre": "Copa de Vino Tinto",
+          "descripcion": "Copa de vino tinto de la casa, malbec.",
+          "precio_cop": 22000,
+          "slug_foto": "copa-de-vino-tinto"
+        },
+        {
+          "nombre": "Limonada de Hierbabuena",
+          "descripcion": "Limonada natural con hierbabuena fresca, con hielo.",
+          "precio_cop": 9000,
+          "slug_foto": "limonada-de-hierbabuena"
+        }
+      ]
+    }
+  ]
+}
