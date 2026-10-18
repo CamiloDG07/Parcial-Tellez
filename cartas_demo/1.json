@@ -1,0 +1,98 @@
+{
+  "restaurante_id": 1,
+  "restaurante": "Slice Palace Medianoche",
+  "origen": "Menú de PIZZATRO (repo JuanPZ28), usado con su autorización. Solo texto y precios; sin imágenes.",
+  "moneda": "COP (pesos enteros)",
+  "categorias": [
+    {
+      "nombre": "Entrada",
+      "orden": 1,
+      "productos": [
+        {
+          "nombre": "Bruschetta Clásica",
+          "descripcion": "Pan artesanal tostado con tomate fresco, albahaca, ajo y aceite de oliva extra virgen.",
+          "precio_cop": 18000,
+          "slug_foto": "bruschetta-clasica"
+        },
+        {
+          "nombre": "Ensalada Caprese",
+          "descripcion": "Mozzarella fresca, tomate maduro y hojas de albahaca con reducción de balsámico.",
+          "precio_cop": 22000,
+          "slug_foto": "ensalada-caprese"
+        },
+        {
+          "nombre": "Calamares Fritti",
+          "descripcion": "Anillos de calamar crocantes con salsa marinara y limón.",
+          "precio_cop": 29000,
+          "slug_foto": "calamares-fritti"
+        },
+        {
+          "nombre": "Arancini di Risotto",
+          "descripcion": "Croquetas de risotto rellenas de mozzarella, empanizadas y fritas.",
+          "precio_cop": 24000,
+          "slug_foto": "arancini-di-risotto"
+        },
+        {
+          "nombre": "Focaccia al Rosmarino",
+          "descripcion": "Pan plano horneado con romero, sal marina y aceite de oliva.",
+          "precio_cop": 16000,
+          "slug_foto": "focaccia-al-rosmarino"
+        }
+      ]
+    },
+    {
+      "nombre": "Plato fuerte",
+      "orden": 2,
+      "productos": [
+        {
+          "nombre": "Pizza Margherita",
+          "descripcion": "Salsa de tomate San Marzano, mozzarella fior di latte, albahaca y aceite de oliva.",
+          "precio_cop": 36000,
+          "slug_foto": "pizza-margherita"
+        },
+        {
+          "nombre": "Pizza Pepperoni",
+          "descripcion": "Mozzarella, salsa de tomate y abundante pepperoni artesanal.",
+          "precio_cop": 42000,
+          "slug_foto": "pizza-pepperoni"
+        },
+        {
+          "nombre": "Pizza Quattro Formaggi",
+          "descripcion": "Mozzarella, gorgonzola, parmesano y provolone sobre base blanca.",
+          "precio_cop": 46000,
+          "slug_foto": "pizza-quattro-formaggi"
+        },
+        {
+          "nombre": "Pollo alla Parmigiana",
+          "descripcion": "Pechuga apanada con salsa pomodoro y mozzarella gratinada, con pasta.",
+          "precio_cop": 48000,
+          "slug_foto": "pollo-alla-parmigiana"
+        }
+      ]
+    },
+    {
+      "nombre": "Postre",
+      "orden": 3,
+      "productos": [
+        {
+          "nombre": "Cannoli Siciliani",
+          "descripcion": "Tubos crocantes rellenos de crema de ricotta con chips de chocolate.",
+          "precio_cop": 18000,
+          "slug_foto": "cannoli-siciliani"
+        },
+        {
+          "nombre": "Affogato al Caffè",
+          "descripcion": "Helado de vainilla bañado en espresso caliente.",
+          "precio_cop": 14000,
+          "slug_foto": "affogato-al-caffe"
+        },
+        {
+          "nombre": "Zeppole",
+          "descripcion": "Buñuelos italianos fritos con azúcar glass y crema pastelera.",
+          "precio_cop": 16000,
+          "slug_foto": "zeppole"
+        }
+      ]
+    }
+  ]
+}

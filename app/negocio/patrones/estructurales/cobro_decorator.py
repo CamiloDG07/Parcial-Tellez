@@ -1,8 +1,11 @@
 """Patrón Decorator: cálculo del "total a pagar" de un pre-pedido.
 
 Todo el cálculo se hace en el servidor y en pesos colombianos ENTEROS (sin centavos).
-Este módulo NO escribe nada en la base de datos: `reserva_item.precio_unitario_cop` y los ingresos
-estimados siguen siendo el subtotal.
+Este módulo NO escribe en la base de datos. Al CREAR la reserva, el servicio guarda una instantánea del
+cobro (`instantanea`: subtotal, descuento, impuesto y total con sus tasas) en la tabla `reserva`; después las
+vistas muestran esa instantánea (`desglose_guardado`) y no recalculan con las tasas vigentes, de modo que un
+cambio en `config.py` no altera lo cobrado en reservas anteriores. La propina es voluntaria y no se guarda.
+Los ingresos estimados del panel siguen usando el subtotal de los ítems.
 
 REGLA DE REDONDEO ÚNICA (`porcentaje_de`): cada decorador calcula su ajuste como
 ``(monto_del_componente_envuelto * tasa_pct + 50) // 100``, es decir, el porcentaje redondeado
@@ -156,3 +159,33 @@ def desglose(items: Iterable[_Linea], con_propina: bool = False) -> dict:
     return {"lineas": lineas, "subtotal_cop": etapas[0].monto_cop(), "total_cop": etapas[-1].monto_cop(),
             "incluye_propina": con_propina, "propina_sugerida_cop": con - sin,
             "total_con_propina_cop": con, "descripcion": etapas[-1].descripcion()}
+
+
+def instantanea(items: Iterable[_Linea]) -> dict:
+    """Valores a congelar en la reserva al crearla (con las tasas vigentes en ese momento, sin propina)."""
+    etapas = armar_cadena(items, False)
+    subtotal, total = etapas[0].monto_cop(), etapas[-1].monto_cop()
+    descuento = next((e for e in etapas if isinstance(e, ConDescuento)), None)
+    impuesto = next(e for e in etapas if isinstance(e, ConImpuestoConsumo))
+    desc_cop = subtotal - descuento.monto_cop() if descuento else 0
+    return {"subtotal_cop": subtotal,
+            "descuento_pct": descuento.tasa_pct if descuento else 0, "descuento_cop": desc_cop,
+            "impuesto_pct": impuesto.tasa_pct, "impuesto_cop": total - (subtotal - desc_cop),
+            "total_pagar_cop": total}
+
+
+def desglose_guardado(reserva, con_propina: bool = False) -> dict:
+    """Mismo formato que `desglose`, pero leyendo la instantánea guardada en la reserva (no recalcula tasas).
+    La propina sugerida sí usa la tasa vigente porque es opcional y nunca se persiste."""
+    sub, desc, imp, total = reserva.subtotal_cop, reserva.descuento_cop, reserva.impuesto_cop, reserva.total_pagar_cop
+    lineas = [{"etiqueta": CobroBase.etiqueta, "monto_cop": sub}]
+    if desc:
+        lineas.append({"etiqueta": f"Descuento por pedido grande ({reserva.descuento_pct} %)", "monto_cop": -desc})
+    lineas.append({"etiqueta": f"Impuesto al consumo ({reserva.impuesto_pct} %)", "monto_cop": imp})
+    propina = porcentaje_de(total, config.TASA_PROPINA_SUGERIDA_PCT)
+    if con_propina:
+        lineas.append({"etiqueta": f"Propina sugerida ({config.TASA_PROPINA_SUGERIDA_PCT} %)", "monto_cop": propina})
+    return {"lineas": lineas, "subtotal_cop": sub, "total_cop": total + (propina if con_propina else 0),
+            "incluye_propina": con_propina, "propina_sugerida_cop": propina,
+            "total_con_propina_cop": total + propina,
+            "descripcion": " → ".join(l["etiqueta"] for l in lineas)}

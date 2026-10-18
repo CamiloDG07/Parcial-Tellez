@@ -19,6 +19,12 @@
   </form>
 
   {% if restaurante %}
+  <p class="banner-restaurante" id="banner-restaurante" role="status">
+    <span class="banner-etq">ESTÁS RESERVANDO EN</span>
+    <strong>{{ restaurante.nombre }}</strong>
+    <span class="banner-datos">{{ restaurante.tipo_cocina }} · {{ restaurante.direccion }}, {{ restaurante.ciudad }}</span>
+    <a href="/carta?restaurante_id={{ restaurante.id }}">Ver su carta</a>
+  </p>
   <div class="power" role="progressbar" aria-label="Progreso de la reserva" aria-valuemin="0" aria-valuemax="100" aria-valuenow="20" id="power">
     <span class="power-etq">POWER</span>
     <div class="power-barra"><div class="power-relleno" id="power-relleno"></div></div>
@@ -30,13 +36,14 @@
   <form id="form-reserva" class="formulario reserva-rejilla" method="post" action="/reservar" novalidate
         data-restaurante="{{ restaurante.id }}" data-hoy="{{ hoy }}" data-hora-inicial="{{ valores.hora }}"
         data-mesa-inicial="{{ valores.mesa_id }}">
+    <noscript><div class="aviso aviso-error" role="alert">Para ver las horas y las mesas disponibles necesitas activar JavaScript en tu navegador.</div></noscript>
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <input type="hidden" name="restaurante_id" value="{{ restaurante.id }}">
     <input type="hidden" name="hora" id="campo-hora" value="{{ valores.hora }}">
     <input type="hidden" name="mesa_id" id="campo-mesa" value="{{ valores.mesa_id }}">
 
     <div class="panel paso" data-paso="1" data-titulo="Fecha">
-      <h2 class="subtitulo">1 · Fecha y personas — {{ restaurante.nombre }}</h2>
+      <h2 class="subtitulo">1 · Fecha y personas</h2>
       <label for="fecha">Fecha</label>
       <input id="fecha" name="fecha" type="date" required min="{{ hoy }}" max="{{ maximo }}" value="{{ valores.fecha }}">
       <p class="error-campo" id="err-fecha" role="alert"></p>

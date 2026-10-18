@@ -35,8 +35,48 @@ def _url_imagen(nombre: str) -> str:
     return "/static/img/plato-vacio.svg"
 
 
+def _srcset_imagen(nombre: str) -> str:
+    """`srcset` de la foto de un plato si existe su versión pequeña `<slug>@400.jpg` (si no, cadena vacía)."""
+    if nombre and nombre.endswith(".jpg") and not (config.UPLOADS_DIR / nombre).is_file():
+        pequena = nombre[:-4] + "@400.jpg"
+        if (config.PLATOS_DIR / nombre).is_file() and (config.PLATOS_DIR / pequena).is_file():
+            return f"/static/img/platos/{pequena} 400w, /static/img/platos/{nombre} 800w"
+    return ""
+
+
+_DIAS = ("lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo")
+_MESES = ("enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre",
+          "octubre", "noviembre", "diciembre")
+
+
+def _fecha_larga(texto: str) -> str:
+    """'2026-10-15' → 'jueves 15 de octubre de 2026' (sin depender de la configuración regional del sistema)."""
+    try:
+        d = date.fromisoformat(str(texto))
+    except ValueError:
+        return str(texto)
+    return f"{_DIAS[d.weekday()]} {d.day} de {_MESES[d.month - 1]} de {d.year}"
+
+
+def _codigo(reserva_id: int) -> str:
+    """Código visible de una reserva, derivado de su id (no requiere columna nueva): 60 → MD-0060."""
+    return f"MD-{int(reserva_id):04d}"
+
+
+def clasificar_reservas(filas: list[dict], hoy: str) -> dict[str, list[dict]]:
+    """Agrupa las reservas del cliente: próximas (por fecha ascendente), pasadas y canceladas (más recientes primero)."""
+    clave = lambda f: (f["reserva"].fecha, f["reserva"].hora)
+    proximas = sorted((f for f in filas if f["reserva"].estado != "CANCELADA" and f["reserva"].fecha >= hoy), key=clave)
+    pasadas = sorted((f for f in filas if f["reserva"].estado != "CANCELADA" and f["reserva"].fecha < hoy), key=clave, reverse=True)
+    canceladas = sorted((f for f in filas if f["reserva"].estado == "CANCELADA"), key=clave, reverse=True)
+    return {"proximas": proximas, "pasadas": pasadas, "canceladas": canceladas}
+
+
 plantillas.env.filters["cop"] = _cop
+plantillas.env.filters["fecha_larga"] = _fecha_larga
+plantillas.env.filters["codigo"] = _codigo
 plantillas.env.globals["url_imagen"] = _url_imagen
+plantillas.env.globals["srcset_imagen"] = _srcset_imagen
 
 
 class RedirigirLogin(Exception):

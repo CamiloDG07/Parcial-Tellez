@@ -14,6 +14,8 @@
       </select></div>
     <button class="btn btn-dorado" type="submit">FILTRAR</button>
     <a class="btn btn-fantasma" href="/admin/reservas">LIMPIAR</a>
+    <a class="btn btn-fantasma" href="/admin/reservas.csv?{{ {'q': filtro.q, 'fecha': filtro.fecha, 'estado': filtro.estado}|urlencode }}"
+       title="Descarga las reservas con los filtros actuales">EXPORTAR CSV</a>
   </form>
 
   {% if filas %}

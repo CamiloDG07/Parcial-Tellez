@@ -1,9 +1,17 @@
 {% extends "base.html" %}
+{% from "parciales/portadas.html" import portada %}
 {% block titulo %}Restaurantes{% endblock %}
 {% block contenido %}
 <section class="contenedor">
   <p class="etiqueta">CAM 02 — DIRECTORIO</p>
   <h1 class="titular">RESTAURANTES</h1>
+
+  <nav class="chips" aria-label="Filtrar por tipo de cocina">
+    <a class="chip{% if not filtro.cocina %} activo{% endif %}" href="/restaurantes"{% if not filtro.cocina %} aria-current="true"{% endif %}>TODOS</a>
+    {% for c in cocinas %}
+    <a class="chip{% if c == filtro.cocina %} activo{% endif %}" href="/restaurantes?cocina={{ c|urlencode }}"{% if c == filtro.cocina %} aria-current="true"{% endif %}>{{ c|upper }}</a>
+    {% endfor %}
+  </nav>
 
   <form class="filtros panel" method="get" action="/restaurantes" role="search">
     <div><label for="f-nombre">Nombre</label>
@@ -24,6 +32,7 @@
     {% for item in restaurantes %}
     {% set r = item.restaurante %}
     <article class="tarjeta feed feed-{{ loop.index0 % 5 }}">
+      <div class="portada-marco">{{ portada(r.tipo_cocina) }}</div>
       <p class="etiqueta">CAM {{ '%02d' % loop.index }} — {{ r.ciudad|upper }}</p>
       <h2>{{ r.nombre }}</h2>
       <p class="dato">{{ r.tipo_cocina }} · {{ r.direccion }}</p>

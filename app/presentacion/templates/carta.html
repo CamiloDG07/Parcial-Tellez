@@ -38,7 +38,8 @@
       <div class="rejilla-platos">
       {% for p in s.productos %}
         <article class="plato" data-nombre="{{ (p.nombre ~ ' ' ~ p.descripcion)|lower }}">
-          <div class="plato-foto feed-foto"><img src="{{ url_imagen(p.imagen) }}" alt="Foto de {{ p.nombre }}" loading="lazy" width="320" height="200"></div>
+          {% set ss = srcset_imagen(p.imagen) %}
+          <div class="plato-foto feed-foto"><img src="{{ url_imagen(p.imagen) }}"{% if ss %} srcset="{{ ss }}" sizes="(max-width: 600px) 92vw, 290px"{% endif %} alt="Foto de {{ p.nombre }}" loading="lazy" decoding="async" width="320" height="200"></div>
           <div class="plato-cuerpo">
             <h3>{{ p.nombre }}</h3>
             <p class="plato-desc">{{ p.descripcion }}</p>

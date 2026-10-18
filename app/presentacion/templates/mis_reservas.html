@@ -4,50 +4,64 @@
 <section class="contenedor">
   <p class="etiqueta">CAM 03 — GRABACIONES</p>
   <h1 class="titular">MIS RESERVAS</h1>
-  {% if filas %}
-  <div class="tabla-envoltura">
-  <table class="tabla">
-    <caption class="solo-lectores">Listado de mis reservas</caption>
-    <thead><tr><th scope="col">#</th><th scope="col">Restaurante</th><th scope="col">Fecha</th><th scope="col">Hora</th>
-      <th scope="col">Personas</th><th scope="col">Mesa</th><th scope="col">Pre-pedido</th><th scope="col">Estado</th><th scope="col">Acción</th></tr></thead>
-    <tbody>
-    {% for f in filas %}{% set r = f.reserva %}
-      <tr>
-        <td data-etiqueta="#">{{ r.id }}</td>
-        <td data-etiqueta="Restaurante">{{ f.restaurante.nombre }}</td>
-        <td data-etiqueta="Fecha">{{ r.fecha }}</td>
-        <td data-etiqueta="Hora">{{ r.hora }}</td>
-        <td data-etiqueta="Personas">{{ r.num_personas }}</td>
-        <td data-etiqueta="Mesa">{{ f.mesa.numero }}{% if f.mesa.ubicacion %} · {{ f.mesa.ubicacion }}{% endif %}</td>
-        <td data-etiqueta="Pre-pedido">
-          {% if f.detalle %}
-          <details><summary>A pagar {{ f.cobro.total_cop|cop }} · {{ f.detalle|length }} plato{{ 's' if f.detalle|length > 1 }}</summary>
-            <ul class="detalle-items">
-              {% for d in f.detalle %}<li>{{ d.item.cantidad }} × {{ d.nombre }} <span>{{ d.item.subtotal_cop|cop }}</span></li>{% endfor %}
-              {% for l in f.cobro.lineas %}<li class="linea-cobro">{{ l.etiqueta }} <span>{{ l.monto_cop|cop }}</span></li>{% endfor %}
-              <li class="total">TOTAL A PAGAR <span>{{ f.cobro.total_cop|cop }}</span></li>
-              <li class="sugerencia">Propina sugerida, opcional y no incluida <span>{{ f.cobro.propina_sugerida_cop|cop }}</span></li>
-            </ul></details>
-          {% else %}—{% endif %}
-        </td>
-        <td data-etiqueta="Estado"><span class="estado estado-{{ r.estado|lower }}">{{ r.estado }}</span></td>
-        <td data-etiqueta="Acción">
-          {% if r.estado != 'CANCELADA' and r.fecha >= hoy %}
-          <form method="post" action="/mis-reservas/{{ r.id }}/cancelar" class="en-linea">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            <button class="btn btn-fantasma btn-sm" type="submit" data-confirmar="¿Cancelar la reserva #{{ r.id }}?">CANCELAR</button>
-          </form>
-          {% else %}—{% endif %}
-        </td>
-      </tr>
-      {% if r.notas %}<tr class="fila-notas"><td></td><td colspan="8">Notas: {{ r.notas }}</td></tr>{% endif %}
+
+  {% if total %}
+  <nav class="pestanas pestanas-reservas" aria-label="Filtrar mis reservas">
+    {% for clave, nombre in (('proximas', 'PRÓXIMAS'), ('pasadas', 'PASADAS'), ('canceladas', 'CANCELADAS'), ('todas', 'TODAS')) %}
+    <a class="pestana {% if ver == clave %}activa{% endif %}" href="/mis-reservas?ver={{ clave }}"
+       {% if ver == clave %}aria-current="page"{% endif %}>{{ nombre }} <span class="pestana-n">{{ conteos[clave] }}</span></a>
     {% endfor %}
-    </tbody>
-  </table>
+  </nav>
+
+  {% if filas %}
+  <div class="lista-reservas">
+    {% for f in filas %}{% set r = f.reserva %}
+    <article class="reserva-card reserva-{{ r.estado|lower }}" aria-labelledby="res-{{ r.id }}">
+      <header class="reserva-cab">
+        <div>
+          <p class="reserva-codigo">{{ r.id|codigo }}</p>
+          <h2 id="res-{{ r.id }}">{{ f.restaurante.nombre }}</h2>
+          <p class="reserva-fecha">{{ r.fecha|fecha_larga }} · {{ r.hora }}</p>
+        </div>
+        <span class="estado estado-{{ r.estado|lower }}">{{ r.estado }}</span>
+      </header>
+      <dl class="reserva-datos">
+        <div><dt>Personas</dt><dd>{{ r.num_personas }}</dd></div>
+        <div><dt>Mesa</dt><dd>{{ f.mesa.numero }}{% if f.mesa.ubicacion %} · {{ f.mesa.ubicacion }}{% endif %}</dd></div>
+        <div><dt>Lugar</dt><dd>{{ f.restaurante.direccion }}, {{ f.restaurante.ciudad }}</dd></div>
+      </dl>
+      {% if r.estado == 'PENDIENTE' %}<p class="reserva-nota">Pendiente: el restaurante debe confirmarla.</p>{% endif %}
+      {% if r.notas %}<p class="reserva-nota">Notas: {{ r.notas }}</p>{% endif %}
+      {% if f.detalle %}
+      <details class="reserva-pedido"><summary>A pagar {{ f.cobro.total_cop|cop }} · {{ f.detalle|length }} plato{{ 's' if f.detalle|length > 1 }}</summary>
+        <ul class="detalle-items">
+          {% for d in f.detalle %}<li>{{ d.item.cantidad }} × {{ d.nombre }} <span>{{ d.item.subtotal_cop|cop }}</span></li>{% endfor %}
+          {% for l in f.cobro.lineas %}<li class="linea-cobro">{{ l.etiqueta }} <span>{{ l.monto_cop|cop }}</span></li>{% endfor %}
+          <li class="total">TOTAL A PAGAR <span>{{ f.cobro.total_cop|cop }}</span></li>
+          <li class="sugerencia">Propina sugerida, opcional y no incluida <span>{{ f.cobro.propina_sugerida_cop|cop }}</span></li>
+        </ul></details>
+      {% endif %}
+      <footer class="reserva-acciones">
+        <a class="btn btn-fantasma btn-sm" href="/mis-reservas/{{ r.id }}/comprobante">COMPROBANTE</a>
+        {% if r.estado != 'CANCELADA' %}<a class="btn btn-fantasma btn-sm" href="/mis-reservas/{{ r.id }}/calendario.ics" download>CALENDARIO</a>{% endif %}
+        {% if r.estado != 'CANCELADA' and r.fecha >= hoy %}
+        <form method="post" action="/mis-reservas/{{ r.id }}/cancelar" class="en-linea">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <button class="btn btn-fantasma btn-sm btn-peligro" type="submit" data-confirmar="¿Cancelar la reserva {{ r.id|codigo }}?">CANCELAR</button>
+        </form>
+        {% endif %}
+      </footer>
+    </article>
+    {% endfor %}
   </div>
   {% else %}
-  <p class="vacio">No hay grabaciones: todavía no tienes reservas.</p>
-  <a class="btn btn-rojo" href="/reservar">HACER MI PRIMERA RESERVA</a>
+  <p class="vacio">No hay reservas en esta vista. Prueba con «Todas».</p>
+  {% endif %}
+  {% else %}
+  <div class="vacio-bloque">
+    <p class="vacio">No hay grabaciones: todavía no tienes reservas.</p>
+    <a class="btn btn-rojo" href="/reservar">HACER MI PRIMERA RESERVA</a>
+  </div>
   {% endif %}
 </section>
 {% endblock %}

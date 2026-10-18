@@ -3,13 +3,15 @@ from datetime import date, timedelta
 from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, Form, Request
+from fastapi.responses import Response
 
 from app import config
 from app.datos.modelos import Usuario
 from app.dependencias import auth_service, fachada
+from app.negocio.calendario import evento_ics
 from app.negocio.excepciones import NoAutorizadoError, NoEncontradoError, ReglaNegocioError
-from app.presentacion.comun import (_cop, avisar, entero, renderizar, redirigir, requiere_cliente,
-                                    usuario_actual, verificar_csrf)
+from app.presentacion.comun import (_cop, avisar, clasificar_reservas, entero, renderizar, redirigir,
+                                    requiere_cliente, usuario_actual, verificar_csrf)
 
 router = APIRouter()
 
@@ -104,9 +106,35 @@ def crear_reserva(request: Request, restaurante_id: str = Form(""), fecha: str =
     return redirigir("/mis-reservas")
 
 
+VISTAS_RESERVAS = ("proximas", "pasadas", "canceladas", "todas")
+
+
 @router.get("/mis-reservas")
-def mis_reservas(request: Request, usuario: Usuario = Depends(requiere_cliente)):
-    return renderizar(request, "mis_reservas.html", filas=fachada.mis_reservas(usuario), hoy=date.today().isoformat())
+def mis_reservas(request: Request, ver: str = "", usuario: Usuario = Depends(requiere_cliente)):
+    hoy = date.today().isoformat()
+    filas = fachada.mis_reservas(usuario)
+    grupos = clasificar_reservas(filas, hoy)
+    grupos["todas"] = grupos["proximas"] + grupos["pasadas"] + grupos["canceladas"]
+    if ver not in VISTAS_RESERVAS:                      # por defecto: las próximas, o todas si no hay ninguna
+        ver = "proximas" if grupos["proximas"] else "todas"
+    conteos = {k: len(v) for k, v in grupos.items()}
+    return renderizar(request, "mis_reservas.html", filas=grupos[ver], ver=ver, conteos=conteos,
+                      total=len(filas), hoy=hoy)
+
+
+@router.get("/mis-reservas/{reserva_id}/comprobante")
+def comprobante(request: Request, reserva_id: int, usuario: Usuario = Depends(requiere_cliente)):
+    """Comprobante imprimible. El Proxy rechaza (403) las reservas de otros clientes."""
+    return renderizar(request, "comprobante.html", f=fachada.detalle_reserva(usuario, reserva_id),
+                      tasa_propina=config.TASA_PROPINA_SUGERIDA_PCT)
+
+
+@router.get("/mis-reservas/{reserva_id}/calendario.ics")
+def calendario(reserva_id: int, usuario: Usuario = Depends(requiere_cliente)):
+    f = fachada.detalle_reserva(usuario, reserva_id)
+    contenido = evento_ics(f["reserva"], f["restaurante"], f["mesa"])
+    return Response(contenido, media_type="text/calendar; charset=utf-8",
+                    headers={"Content-Disposition": f'attachment; filename="reserva-{reserva_id}.ics"'})
 
 
 @router.post("/mis-reservas/{reserva_id}/cancelar", dependencies=[Depends(verificar_csrf)])

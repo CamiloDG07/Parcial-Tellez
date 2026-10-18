@@ -2,6 +2,8 @@
 __pycache__/
 *.pyc
 *.db
+*.db-wal
+*.db-shm
 .pytest_cache/
 app/presentacion/static/uploads/*
 !app/presentacion/static/uploads/.gitkeep

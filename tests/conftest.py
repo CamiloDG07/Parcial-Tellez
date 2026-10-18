@@ -40,3 +40,12 @@ def limpiar_subidas():
         for f in set(config.UPLOADS_DIR.glob("*")) - antes:
             if f.name != ".gitkeep":
                 f.unlink()
+
+
+@pytest.fixture(autouse=True)
+def reiniciar_limitador_de_login():
+    """El límite de intentos vive en memoria: cada prueba empieza sin fallos registrados."""
+    from app.presentacion.controladores import auth_controller
+    auth_controller.limitador_cuenta.reiniciar()
+    auth_controller.limitador_ip.reiniciar()
+    yield

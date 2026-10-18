@@ -1,0 +1,22 @@
+# Blueprint de Render: https://render.com/docs/blueprint-spec
+# Plan gratuito: el disco es efímero. La BD SQLite se recrea y se siembra en cada arranque en frío (datos de demostración).
+# Para conservar los datos entre reinicios hay que usar un plan de pago con disco persistente (ver docs/DESPLIEGUE.md).
+services:
+  - type: web
+    name: midnight-diner
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements-prod.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips='*'
+    healthCheckPath: /login
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.5
+      - key: SECRET_KEY
+        generateValue: true
+      - key: HTTPS_ONLY
+        value: "1"
+      - key: AUTOSEMBRAR
+        value: "1"
+      - key: RESERVAS_DB
+        value: /tmp/reservas.db

@@ -45,6 +45,12 @@ class CartaService:
             filas.append({"item": item, "nombre": producto.nombre if producto else "(producto eliminado)"})
         return filas
 
+    def detalles_de(self, reserva_ids: list[int]) -> dict[int, list[dict]]:
+        """Pre-pedido de VARIAS reservas con una sola consulta (misma forma que `detalle_items`)."""
+        por_reserva = self._items.listar_con_nombre(list(reserva_ids))
+        return {rid: [{"item": item, "nombre": nombre} for item, nombre in por_reserva.get(rid, [])]
+                for rid in reserva_ids}
+
     # ---------- categorías (admin) ----------
     def crear_categoria(self, actor: Usuario, restaurante_id: int, nombre: str, orden: int) -> int:
         self._restaurantes.verificar_admin(actor, restaurante_id)

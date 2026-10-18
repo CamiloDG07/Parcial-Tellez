@@ -47,7 +47,15 @@ CREATE TABLE IF NOT EXISTS reserva (
     num_personas   INTEGER NOT NULL CHECK (num_personas > 0),
     estado         TEXT NOT NULL DEFAULT 'PENDIENTE' CHECK (estado IN ('PENDIENTE', 'CONFIRMADA', 'CANCELADA')),
     notas          TEXT NOT NULL DEFAULT '',
-    creado_en      TEXT NOT NULL
+    creado_en      TEXT NOT NULL,
+    -- Instantánea del cobro al crear la reserva (COP enteros): un cambio posterior de tasas en config.py
+    -- no altera lo que se le cobró a cada cliente. La propina es voluntaria y no se guarda.
+    subtotal_cop    INTEGER NOT NULL DEFAULT 0 CHECK (subtotal_cop >= 0),
+    descuento_pct   INTEGER NOT NULL DEFAULT 0 CHECK (descuento_pct BETWEEN 0 AND 100),
+    descuento_cop   INTEGER NOT NULL DEFAULT 0 CHECK (descuento_cop >= 0),
+    impuesto_pct    INTEGER NOT NULL DEFAULT 0 CHECK (impuesto_pct BETWEEN 0 AND 100),
+    impuesto_cop    INTEGER NOT NULL DEFAULT 0 CHECK (impuesto_cop >= 0),
+    total_pagar_cop INTEGER NOT NULL DEFAULT 0 CHECK (total_pagar_cop = subtotal_cop - descuento_cop + impuesto_cop)
 );
 
 CREATE INDEX IF NOT EXISTS idx_reserva_mesa_fecha ON reserva (mesa_id, fecha);

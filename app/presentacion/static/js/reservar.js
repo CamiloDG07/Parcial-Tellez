@@ -52,7 +52,9 @@
   function esqueletos() {
     // Marcadores de carga (skeletons) mientras llega la respuesta.
     chips.replaceChildren(...Array.from({ length: 8 }, () => Object.assign(document.createElement('span'), { className: 'chip chip-esqueleto' })));
-    plano.replaceChildren(...Array.from({ length: 6 }, () => Object.assign(document.createElement('span'), { className: 'mesa mesa-esqueleto' })));
+    const fila = Object.assign(document.createElement('div'), { className: 'zona-mesas' });
+    fila.append(...Array.from({ length: 6 }, () => Object.assign(document.createElement('span'), { className: 'mesa mesa-esqueleto' })));
+    plano.replaceChildren(fila);
   }
 
   function pintarHoras() {
@@ -91,31 +93,71 @@
     const franja = datos.franjas.find((f) => f.hora === campoHora.value);
     const libres = new Set(franja ? franja.mesas_libres : []);
     if (campoMesa.value && (!franja || !libres.has(parseInt(campoMesa.value, 10)))) campoMesa.value = '';
+
+    // El salón se dibuja por zonas (columna `ubicacion` de la mesa); la forma depende de la capacidad.
+    const zonas = new Map();
     for (const m of datos.mesas) {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'mesa';
-      b.style.setProperty('--cap', m.capacidad);
-      let clase, etiqueta, activa = false;
-      if (!m.activa) { clase = 'nula'; etiqueta = 'inactiva'; }
-      else if (m.capacidad < datos.personas) { clase = 'nula'; etiqueta = 'capacidad insuficiente'; }
-      else if (!franja) { clase = 'libre'; etiqueta = 'elige una hora'; }
-      else if (libres.has(m.id)) { clase = 'libre'; etiqueta = 'libre'; activa = true; }
-      else { clase = 'ocupada'; etiqueta = 'ocupada'; }
-      if (String(m.id) === campoMesa.value) clase = 'sel';
-      b.classList.add('mesa-' + clase);
-      b.innerHTML = '<strong></strong><span></span>';
-      b.firstChild.textContent = m.numero;
-      b.lastChild.textContent = m.capacidad + ' pax';
-      b.setAttribute('aria-label', `Mesa ${m.numero}, ${m.capacidad} personas, ${m.ubicacion || 'sin ubicación'}: ${etiqueta}`);
-      b.setAttribute('aria-pressed', String(clase === 'sel'));
-      b.disabled = !activa || auto.checked;
-      b.addEventListener('click', () => {
-        campoMesa.value = String(m.id); auto.checked = false; error('err-mesa');
-        pintarPlano(); progreso();
-      });
-      plano.appendChild(b);
+      const nombre = (m.ubicacion || '').trim() || 'Salón';
+      if (!zonas.has(nombre)) zonas.set(nombre, []);
+      zonas.get(nombre).push(m);
     }
+    for (const [nombre, mesas] of zonas) {
+      const zona = document.createElement('div');
+      zona.className = 'zona';
+      zona.setAttribute('role', 'group');
+      zona.setAttribute('aria-label', `Zona ${nombre}`);
+      const titulo = document.createElement('p');
+      titulo.className = 'zona-titulo';
+      const disp = mesas.filter((m) => m.activa && m.capacidad >= datos.personas && libres.has(m.id)).length;
+      titulo.textContent = nombre;
+      if (franja) {
+        const nota = document.createElement('small');
+        nota.textContent = disp === 1 ? '1 libre' : `${disp} libres`;
+        titulo.appendChild(nota);
+      }
+      const fila = document.createElement('div');
+      fila.className = 'zona-mesas';
+      for (const m of mesas) fila.appendChild(botonMesa(m, franja, libres));
+      zona.append(titulo, fila);
+      plano.appendChild(zona);
+    }
+  }
+
+  function botonMesa(m, franja, libres) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    let clase, etiqueta, activa = false;
+    if (!m.activa) { clase = 'nula'; etiqueta = 'inactiva'; }
+    else if (m.capacidad < datos.personas) { clase = 'nula'; etiqueta = 'capacidad insuficiente'; }
+    else if (!franja) { clase = 'libre'; etiqueta = 'elige una hora'; }
+    else if (libres.has(m.id)) { clase = 'libre'; etiqueta = 'libre'; activa = true; }
+    else { clase = 'ocupada'; etiqueta = 'ocupada'; }
+    if (String(m.id) === campoMesa.value) clase = 'sel';
+    const forma = m.capacidad <= 2 ? 'redonda' : m.capacidad <= 4 ? 'cuadrada' : 'larga';
+    b.className = `mesa mesa-${clase} forma-${forma}`;
+    b.style.setProperty('--cap', m.capacidad);
+    const sillas = (n) => {
+      const fila = document.createElement('span');
+      fila.className = 'sillas';
+      fila.setAttribute('aria-hidden', 'true');
+      for (let i = 0; i < n; i++) fila.appendChild(document.createElement('i'));
+      return fila;
+    };
+    const total = Math.min(m.capacidad, 12);
+    const tablero = document.createElement('span');
+    tablero.className = 'tablero';
+    tablero.innerHTML = '<strong></strong><span></span>';
+    tablero.firstChild.textContent = m.numero;
+    tablero.lastChild.textContent = m.capacidad + ' pax';
+    b.append(sillas(Math.ceil(total / 2)), tablero, sillas(Math.floor(total / 2)));
+    b.setAttribute('aria-label', `Mesa ${m.numero}, ${m.capacidad} personas, ${m.ubicacion || 'sin ubicación'}: ${etiqueta}`);
+    b.setAttribute('aria-pressed', String(clase === 'sel'));
+    b.disabled = !activa || auto.checked;
+    b.addEventListener('click', () => {
+      campoMesa.value = String(m.id); auto.checked = false; error('err-mesa');
+      pintarPlano(); progreso();
+    });
+    return b;
   }
 
   function progreso() {

@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import date
 
 from app.datos.modelos import Reserva, ReservaItem, Restaurante, Usuario
-from app.negocio.patrones.estructurales.cobro_decorator import desglose
+from app.negocio.patrones.estructurales.cobro_decorator import desglose, desglose_guardado
 from app.negocio.excepciones import ReglaNegocioError
 from app.negocio.servicios.auth_service import AuthService
 from app.negocio.servicios.carta_service import CarritoService, CartaService
@@ -96,6 +96,10 @@ class ReservaFacade:
     def mis_reservas(self, actor: Usuario) -> list[dict]:
         return self.enriquecer(self._reservas.mis_reservas(actor))
 
+    def detalle_reserva(self, actor: Usuario, reserva_id: int) -> dict:
+        """Una reserva enriquecida. Pasa por el Proxy: solo la ve su dueño o el administrador del restaurante."""
+        return self.enriquecer([self._reservas.obtener(actor, reserva_id)])[0]
+
     def carta_de(self, restaurante_id: int) -> list[dict]:
         """Carta pública (solo productos disponibles) agrupada por categoría."""
         return self._carta.carta(restaurante_id, solo_disponibles=True)
@@ -124,7 +128,10 @@ class ReservaFacade:
         return desglose(items, con_propina)
 
     def cobro_de_reserva(self, reserva: Reserva, con_propina: bool = False) -> dict:
-        """Total a pagar de una reserva ya creada (usa los precios congelados de sus ítems)."""
+        """Total a pagar de una reserva ya creada: la instantánea guardada al crearla (no recalcula con tasas nuevas).
+        Si no tiene pre-pedido vigente (p. ej. cancelada) el cobro es cero."""
+        if reserva.items and reserva.total_pagar_cop:
+            return desglose_guardado(reserva, con_propina)
         return desglose(reserva.items, con_propina)
 
     def reservar_con_pre_pedido(self, actor: Usuario, datos: dict, sesion) -> Reserva:
@@ -139,6 +146,7 @@ class ReservaFacade:
     def enriquecer(self, reservas: list[Reserva]) -> list[dict]:
         """Adjunta restaurante, mesa y cliente a cada reserva para mostrarla."""
         restaurantes, mesas, usuarios = {}, {}, {}
+        detalles = self._carta.detalles_de([r.id for r in reservas])      # una consulta para todos los pre-pedidos
         filas = []
         for r in reservas:
             if r.restaurante_id not in restaurantes:
@@ -147,10 +155,11 @@ class ReservaFacade:
                 mesas[r.mesa_id] = self._mesas.obtener(r.mesa_id)
             if r.usuario_id not in usuarios:
                 usuarios[r.usuario_id] = self._usuarios.obtener(r.usuario_id)
-            detalle = self._carta.detalle_items(r.id)
+            detalle = detalles[r.id]
             filas.append({"reserva": r, "restaurante": restaurantes[r.restaurante_id],
                           "mesa": mesas[r.mesa_id], "cliente": usuarios[r.usuario_id],
                           "detalle": detalle, "total_cop": sum(d["item"].subtotal_cop for d in detalle),
                           # total a pagar (sin propina: la elección de propina no se guarda) y propina sugerida
-                          "cobro": desglose([d["item"] for d in detalle], False)})
+                          "cobro": (desglose_guardado(r) if detalle and r.total_pagar_cop
+                                    else desglose([d["item"] for d in detalle], False))})
         return filas

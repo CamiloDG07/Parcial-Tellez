@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block titulo %}Comprobante {{ f.reserva.id|codigo }}{% endblock %}
+{% block clase_body %}pagina-comprobante{% endblock %}
+{% block contenido %}
+{% set r = f.reserva %}
+<section class="contenedor estrecho comprobante">
+  <p class="etiqueta">COMPROBANTE DE RESERVA</p>
+  <h1 class="titular">{{ r.id|codigo }}</h1>
+  <p><span class="estado estado-{{ r.estado|lower }}">{{ r.estado }}</span></p>
+
+  <dl class="comprobante-datos">
+    <div><dt>Restaurante</dt><dd>{{ f.restaurante.nombre }}<br><small>{{ f.restaurante.direccion }}, {{ f.restaurante.ciudad }}</small></dd></div>
+    <div><dt>Cliente</dt><dd>{{ f.cliente.nombre }}<br><small>{{ f.cliente.email }}</small></dd></div>
+    <div><dt>Fecha y hora</dt><dd>{{ r.fecha|fecha_larga }} · {{ r.hora }}</dd></div>
+    <div><dt>Personas</dt><dd>{{ r.num_personas }}</dd></div>
+    <div><dt>Mesa</dt><dd>{{ f.mesa.numero }}{% if f.mesa.ubicacion %} · {{ f.mesa.ubicacion }}{% endif %}</dd></div>
+    {% if r.notas %}<div><dt>Notas</dt><dd>{{ r.notas }}</dd></div>{% endif %}
+    <div><dt>Creada</dt><dd>{{ r.creado_en.replace('T', ' ') }}</dd></div>
+  </dl>
+
+  {% if f.detalle %}
+  <h2 class="subtitulo">Pre-pedido</h2>
+  <ul class="detalle-items">
+    {% for d in f.detalle %}<li>{{ d.item.cantidad }} × {{ d.nombre }} <span>{{ d.item.subtotal_cop|cop }}</span></li>{% endfor %}
+    {% for l in f.cobro.lineas %}<li class="linea-cobro">{{ l.etiqueta }} <span>{{ l.monto_cop|cop }}</span></li>{% endfor %}
+    <li class="total">TOTAL A PAGAR <span>{{ f.cobro.total_cop|cop }}</span></li>
+    <li class="sugerencia">Propina sugerida ({{ tasa_propina }} %), opcional y no incluida <span>{{ f.cobro.propina_sugerida_cop|cop }}</span></li>
+  </ul>
+  {% endif %}
+
+  <p class="ayuda">Documento informativo de un proyecto académico: no es una factura ni un comprobante de pago. No hay pago en línea; el total es un estimado calculado por el servidor.</p>
+  <div class="acciones sin-imprimir">
+    <button class="btn btn-dorado" type="button" data-imprimir>IMPRIMIR</button>
+    <a class="btn btn-fantasma" href="/mis-reservas">VOLVER A MIS RESERVAS</a>
+  </div>
+</section>
+{% endblock %}

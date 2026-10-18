@@ -5,13 +5,14 @@ Uso (con el servidor corriendo sobre una base recién sembrada):
 """
 from __future__ import annotations
 
+import os
 import re
 import shutil
 import sys
 from html.parser import HTMLParser
 from pathlib import Path
 
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import expect, sync_playwright
 
 BASE = sys.argv[1].rstrip("/")
 SALIDA = Path(sys.argv[2])
@@ -52,7 +53,7 @@ def revisar_html(page, nombre):
     b.feed(crudo)
     if b.errores or b.pila:
         problemas.append(f"{nombre}: {b.errores[:3]} sin cerrar={b.pila}")
-    pegados = re.findall(r'="[^"]*"[A-Za-z]', crudo)
+    pegados = re.findall(r'\s[\w:-]+="[^"]*"[A-Za-z]', crudo)
     if pegados:
         problemas.append(f"{nombre}: atributos pegados {pegados[:3]}")
 
@@ -85,7 +86,8 @@ def siguiente(page):
 
 
 with sync_playwright() as p:
-    nav = p.chromium.launch()
+    exe = os.environ.get("CHROMIUM_EXE")          # opcional: ruta de un Chromium ya instalado (p. ej. en un contenedor)
+    nav = p.chromium.launch(executable_path=exe, args=["--no-sandbox"]) if exe else p.chromium.launch()
     ctx_c = nav.new_context(viewport={"width": 1440, "height": 900})
     ctx_a = nav.new_context(viewport={"width": 1440, "height": 900})
     cli, adm = ctx_c.new_page(), ctx_a.new_page()
@@ -115,21 +117,21 @@ with sync_playwright() as p:
     # ---------- carta y pre-pedido (con animación "vuela al carrito") ----------
     cli.goto(BASE + "/carta?restaurante_id=1")
     cli.click(".pestana:has-text('POSTRE')")
-    assert cli.locator(".plato:visible").count() == 8
-    cli.fill("#buscar-plato", "tira")
+    assert cli.locator(".plato:visible").count() == 3          # Slice Palace tiene 3 postres
+    cli.fill("#buscar-plato", "cannoli")
     assert cli.locator(".plato:visible").count() == 1
     cli.fill("#cant-" + cli.locator(".plato:visible [data-agregar]").first.get_attribute("data-agregar"), "8")
     cli.click(".plato:visible [data-agregar]")
-    cli.wait_for_function("document.getElementById('insignia-carrito').textContent === '8'")
+    expect(cli.locator("#insignia-carrito")).to_have_text("8")
     informe.append("carta: pestañas, búsqueda y agregar al pre-pedido OK")
     cli.fill("#buscar-plato", ""); cli.click(".pestana:has-text('ENTRADA')")
     cli.click(".plato:visible >> nth=0 >> [data-agregar]")
-    cli.wait_for_function("document.getElementById('insignia-carrito').textContent === '9'")
+    expect(cli.locator("#insignia-carrito")).to_have_text("9")
     cli.click("#abrir-carrito"); cli.wait_for_timeout(500)
     total_cajon = cli.inner_text("#carrito-total")
     captura(cli, "08_carta_y_cajon_pre_pedido", revisar=False)
     cli.keyboard.press("Escape")
-    cli.reload(); cli.wait_for_function("document.getElementById('insignia-carrito').textContent === '9'")
+    cli.reload(); expect(cli.locator("#insignia-carrito")).to_have_text("9")
 
     # ---------- asistente de reserva (pasos) ----------
     cli.goto(BASE + "/reservar?restaurante_id=1")
@@ -143,7 +145,9 @@ with sync_playwright() as p:
     captura(cli, "10_error_validacion_hora", revisar=False)
     cli.click(".chip:not([disabled]) >> nth=5"); siguiente(cli)
     cli.uncheck("#auto-mesa")
+    assert cli.locator(".zona").count() >= 2, "el plano debe agrupar las mesas por zonas"
     cli.click(".mesa-libre:not([disabled]) >> nth=0")
+    assert cli.locator(".mesa-sel").count() == 1
     captura(cli, "11_reservar_mesa_elegida", revisar=False)
     siguiente(cli)
     assert "TOTAL ESTIMADO" in cli.inner_text("#paso-pedido") and total_cajon in cli.inner_text("#paso-pedido")
@@ -151,21 +155,34 @@ with sync_playwright() as p:
     siguiente(cli)
     cli.fill("#notas", "Cumpleaños, una vela por favor")
     # total a pagar calculado por el servidor con la cadena de decoradores (Decorator)
-    assert cli.inner_text("#cobro-total") == "$165.240", cli.inner_text("#cobro-total")      # 170.000 -10 % +8 %
+    assert cli.inner_text("#cobro-total") == "$157.464", cli.inner_text("#cobro-total")      # 162.000 -10 % +8 %
     assert "Descuento por pedido grande" in cli.inner_text("#cobro")
     captura(cli, "12b_reservar_paso_confirmar", revisar=False)
     cli.check("#propina")
-    cli.wait_for_function("document.getElementById('cobro-total').textContent === '$181.764'")   # +10 % de propina
+    expect(cli.locator("#cobro-total")).to_have_text("$173.210")   # +10 % de propina
     captura(cli, "12c_reservar_confirmar_con_propina", revisar=False)
     hora, mesa = cli.input_value("#campo-hora"), cli.input_value("#campo-mesa")
     fecha = cli.input_value("#fecha")
     cli.click("button:has-text('CONFIRMAR RESERVA')"); cli.wait_for_load_state()
     assert cli.url.endswith("/mis-reservas") and "PENDIENTE" in cli.content()
     assert total_cajon in cli.content()
-    assert "Total a pagar estimado: $181.764 (propina incluida)" in cli.content()
+    assert "Total a pagar estimado: $173.210 (propina incluida)" in cli.content()
     cli.click("summary:has-text('plato')")
     captura(cli, "13_mis_reservas")
-    informe.append(f"asistente: 5 pasos recorridos; reserva con pre-pedido {total_cajon} (a pagar $165.240; con propina $181.764)")
+    assert cli.locator(".reserva-card").count() == 1 and "MD-" in cli.inner_text(".reserva-codigo")
+    # filtros, comprobante imprimible y archivo de calendario (.ics)
+    cli.click("a.pestana:has-text('CANCELADAS')"); cli.wait_for_load_state()
+    assert cli.locator(".reserva-card").count() == 0
+    cli.goto(BASE + "/mis-reservas")
+    href_ics = cli.get_attribute("a:has-text('CALENDARIO')", "href")
+    ics = cli.request.get(BASE + href_ics)
+    assert ics.ok and ics.headers["content-type"].startswith("text/calendar") and "BEGIN:VEVENT" in ics.text()
+    cli.click("a:has-text('COMPROBANTE')"); cli.wait_for_load_state()
+    assert "no es una factura" in cli.content() and "TOTAL A PAGAR" in cli.content()
+    captura(cli, "13b_comprobante")
+    cli.goto(BASE + "/mis-reservas")
+    informe.append("mis reservas: tarjetas, filtros, comprobante y .ics OK")
+    informe.append(f"asistente: 5 pasos recorridos; reserva con pre-pedido {total_cajon} (a pagar $157.464; con propina $173.210)")
 
     # doble reserva de la misma mesa y hora (POST directo con el token de la sesión)
     token = cli.evaluate("document.querySelector('meta[name=csrf-token]').content")
@@ -188,12 +205,16 @@ with sync_playwright() as p:
     login(adm, "admin@demo.com", "Admin123!")
     assert adm.url.endswith("/admin")
     assert adm.locator("svg.barras-svg rect.barra-svg").count() == 14
+    assert adm.locator("svg.dona-svg").count() == 1 and adm.locator(".calor-celda").count() == 42
+    informe.append("panel: barras (14), dona de estados y mapa de calor (7x6) presentes")
     adm.wait_for_timeout(1200)
     captura(adm, "16_admin_panel")
     adm.goto(BASE + "/admin/mesas"); captura(adm, "17_admin_mesas")
     adm.goto(BASE + "/admin/horarios"); captura(adm, "18_admin_horarios")
     adm.goto(BASE + "/admin/carta"); captura(adm, "19_admin_carta")
     adm.goto(BASE + "/admin/reservas"); captura(adm, "20_admin_reservas")
+    csv_ = adm.request.get(BASE + "/admin/reservas.csv")
+    assert csv_.ok and csv_.headers["content-type"].startswith("text/csv") and csv_.body().startswith(b"\xef\xbb\xbfcodigo;")
     adm.goto(BASE + "/admin/reservas?q=eva")
     assert "Eva Prueba" in adm.content()
     adm.click("button:has-text('CONFIRMAR')"); adm.wait_for_load_state()

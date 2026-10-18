@@ -47,6 +47,51 @@
     </figure>
   </div>
 
+
+  <div class="rejilla-dos">
+    <figure class="panel grafico">
+      <figcaption class="subtitulo">RESERVAS POR ESTADO</figcaption>
+      {% if total_estados %}
+      <div class="dona-envoltura">
+        <svg viewBox="0 0 42 42" class="dona-svg" role="img"
+             aria-label="Gráfico de dona: {% for d in dona %}{{ d.estado|lower }} {{ d.n }} ({{ d.pct }} %){% if not loop.last %}, {% endif %}{% endfor %}. Total {{ total_estados }} reservas.">
+          <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#0a0814" stroke-width="6"/>
+          {% for d in dona %}{% if d.n %}
+          <circle class="dona-seg dona-{{ d.estado|lower }}" cx="21" cy="21" r="15.9155" fill="none" stroke-width="6"
+                  stroke-dasharray="{{ d.largo }} {{ (100 - d.largo)|round(2) }}" stroke-dashoffset="{{ (25 - d.inicio)|round(2) }}"><title>{{ d.estado }}: {{ d.n }}</title></circle>
+          {% endif %}{% endfor %}
+          <text x="21" y="22" text-anchor="middle" class="dona-total">{{ total_estados }}</text>
+          <text x="21" y="27" text-anchor="middle" class="dona-sub">reservas</text>
+        </svg>
+        <ul class="dona-leyenda">
+          {% for d in dona %}<li><i class="dona-{{ d.estado|lower }}"></i>{{ d.estado|capitalize }} <strong>{{ d.n }}</strong> <small>({{ d.pct }} %)</small></li>{% endfor %}
+        </ul>
+      </div>
+      <p class="ayuda">Todas las reservas del restaurante, de cualquier fecha.</p>
+      {% else %}<p class="vacio">Aún no hay reservas.</p>{% endif %}
+    </figure>
+
+    <figure class="panel grafico">
+      <figcaption class="subtitulo">OCUPACIÓN POR DÍA Y HORA</figcaption>
+      {% if calor.maximo %}
+      <div class="calor" role="img" aria-label="Mapa de calor: reservas no canceladas por día de la semana y franja de dos horas. El máximo es {{ calor.maximo }} reservas en una celda.">
+        <div class="calor-cab"><span></span>{% for f in calor.franjas %}<span>{{ f }}</span>{% endfor %}</div>
+        {% for fila in calor.celdas %}{% set di = loop.index0 %}
+        <div class="calor-fila"><span class="calor-dia">{{ dias_cortos[di] }}</span>
+          {% for n in fila %}<span class="calor-celda" style="--nivel: {{ (n / calor.maximo)|round(2) }}" title="{{ dias_cortos[di] }} {{ calor.franjas[loop.index0] }}: {{ n }} reserva(s)">{{ n if n else '' }}</span>{% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+      <p class="ayuda">Cada celda cuenta reservas no canceladas (franjas de 2 horas, horas locales); más claro = más reservas.</p>
+      <table class="solo-lectores">
+        <caption>Reservas por día y franja horaria</caption>
+        <thead><tr><th scope="col">Día</th>{% for f in calor.franjas %}<th scope="col">{{ f }}</th>{% endfor %}</tr></thead>
+        <tbody>{% for fila in calor.celdas %}<tr><th scope="row">{{ dias_cortos[loop.index0] }}</th>{% for n in fila %}<td>{{ n }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+      </table>
+      {% else %}<p class="vacio">Aún no hay reservas para el mapa de calor.</p>{% endif %}
+    </figure>
+  </div>
+
   <div class="acciones">
     <a class="btn btn-rojo" href="/admin/reservas">GESTIONAR RESERVAS{% if datos.pendientes %} ({{ datos.pendientes }} PENDIENTES){% endif %}</a>
     <a class="btn btn-claro" href="/admin/carta">CARTA</a>

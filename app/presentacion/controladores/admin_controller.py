@@ -1,7 +1,10 @@
 """Controlador del administrador: gestiona solo el restaurante que administra."""
+import csv
+import io
 from datetime import date
 
 from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
+from fastapi.responses import Response
 
 from app import config
 from app.datos.modelos import Usuario
@@ -37,7 +40,17 @@ def panel(request: Request, admin: Usuario = Depends(requiere_admin)):
         d["pct"] = round(100 * d["n"] / maximo)
     tope = max([n for _, n in datos["top_productos"]] + [1])
     top = [{"nombre": nombre, "n": n, "pct": round(100 * n / tope)} for nombre, n in datos["top_productos"]]
-    return renderizar(request, "admin/panel.html", restaurante=rest, datos=datos, top=top, mesas=len(mesa_service.listar(rest.id)))
+    # dona de reservas por estado: porcentaje de cada segmento y desplazamiento acumulado (circunferencia = 100)
+    total_estados = sum(datos["por_estado"].values())
+    dona, acumulado = [], 0.0
+    for estado, n in datos["por_estado"].items():
+        pct = 100 * n / total_estados if total_estados else 0
+        dona.append({"estado": estado, "n": n, "pct": round(pct), "largo": round(pct, 2), "inicio": round(acumulado, 2)})
+        acumulado += pct
+    calor = datos["mapa_calor"]
+    return renderizar(request, "admin/panel.html", restaurante=rest, datos=datos, top=top, dona=dona,
+                      total_estados=total_estados, calor=calor, dias_cortos=("Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"),
+                      mesas=len(mesa_service.listar(rest.id)))
 
 
 # ---------- mesas ----------
@@ -98,10 +111,8 @@ def eliminar_horario(request: Request, horario_id: int, admin: Usuario = Depends
 POR_PAGINA = 10
 
 
-@router.get("/reservas")
-def reservas(request: Request, fecha: str = "", estado: str = "", q: str = "", pagina: int = 1,
-             admin: Usuario = Depends(requiere_admin)):
-    rest = _restaurante(admin)
+def _reservas_filtradas(admin: Usuario, rest, fecha: str, estado: str, q: str) -> list[dict]:
+    """Reservas del restaurante con los filtros del listado (las usan la tabla y la exportación CSV)."""
     estado = estado if estado in config.ESTADOS else ""
     lista = reserva_service.listar_por_restaurante(admin, rest.id, fecha or None, estado or None)
     filas = fachada.enriquecer(lista)
@@ -109,6 +120,15 @@ def reservas(request: Request, fecha: str = "", estado: str = "", q: str = "", p
     if termino:
         filas = [f for f in filas if termino in " ".join([
             str(f["reserva"].id), f["cliente"].nombre, f["cliente"].email, f["reserva"].notas]).lower()]
+    return filas
+
+
+@router.get("/reservas")
+def reservas(request: Request, fecha: str = "", estado: str = "", q: str = "", pagina: int = 1,
+             admin: Usuario = Depends(requiere_admin)):
+    rest = _restaurante(admin)
+    estado = estado if estado in config.ESTADOS else ""
+    filas = _reservas_filtradas(admin, rest, fecha, estado, q)
     total = len(filas)
     paginas = max(1, -(-total // POR_PAGINA))
     pagina = min(max(pagina, 1), paginas)
@@ -116,6 +136,29 @@ def reservas(request: Request, fecha: str = "", estado: str = "", q: str = "", p
     return renderizar(request, "admin/reservas.html", restaurante=rest, filas=filas, total=total,
                       filtro={"fecha": fecha, "estado": estado, "q": q}, estados=config.ESTADOS,
                       pagina=pagina, paginas=paginas)
+
+
+def _celda_csv(valor) -> str:
+    """Evita la inyección de fórmulas al abrir el CSV en una hoja de cálculo (celdas que empiezan por = + - @)."""
+    texto = "" if valor is None else str(valor)
+    return "'" + texto if texto[:1] in ("=", "+", "-", "@", "\t", "\r") else texto
+
+
+@router.get("/reservas.csv")
+def exportar_reservas(fecha: str = "", estado: str = "", q: str = "", admin: Usuario = Depends(requiere_admin)):
+    """Exporta las reservas filtradas. Separador «;» y BOM UTF-8 para que Excel en español lo abra en columnas."""
+    rest = _restaurante(admin)
+    salida = io.StringIO()
+    escritor = csv.writer(salida, delimiter=";", lineterminator="\r\n")
+    escritor.writerow(["codigo", "fecha", "hora", "cliente", "correo", "personas", "mesa", "estado",
+                       "subtotal_pre_pedido_cop", "total_a_pagar_cop", "notas"])
+    for f in _reservas_filtradas(admin, rest, fecha, estado, q):
+        r = f["reserva"]
+        escritor.writerow([_celda_csv(v) for v in (
+            f"MD-{r.id:04d}", r.fecha, r.hora, f["cliente"].nombre, f["cliente"].email, r.num_personas,
+            f["mesa"].numero, r.estado, f["total_cop"], f["cobro"]["total_cop"], r.notas)])
+    return Response(("\ufeff" + salida.getvalue()).encode("utf-8"), media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": f'attachment; filename="reservas-{date.today().isoformat()}.csv"'})
 
 
 @router.post("/reservas/{reserva_id}/confirmar", dependencies=[Depends(verificar_csrf)])

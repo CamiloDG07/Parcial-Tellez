@@ -156,7 +156,8 @@ class HorarioDAO(BaseDAO[Horario]):
 class ReservaDAO(BaseDAO[Reserva]):
     tabla = "reserva"
     columnas = ("usuario_id", "restaurante_id", "mesa_id", "fecha", "hora",
-                "num_personas", "estado", "notas", "creado_en")
+                "num_personas", "estado", "notas", "creado_en",
+                "subtotal_cop", "descuento_pct", "descuento_cop", "impuesto_pct", "impuesto_cop", "total_pagar_cop")
 
     def _desde_fila(self, fila: sqlite3.Row) -> Reserva:
         return Reserva(**dict(fila))
@@ -204,6 +205,30 @@ class ReservaDAO(BaseDAO[Reserva]):
         """Inserta la reserva y su pre-pedido en UNA transacción (o se guarda todo o nada)."""
         marcas = ", ".join("?" for _ in self.columnas)
         with ConexionBD().sesion() as con:
+            cur = con.execute(
+                f"INSERT INTO reserva ({', '.join(self.columnas)}) VALUES ({marcas})", self._valores(reserva))
+            nuevo_id = int(cur.lastrowid)
+            con.executemany(
+                "INSERT INTO reserva_item (reserva_id, producto_id, cantidad, precio_unitario_cop) VALUES (?,?,?,?)",
+                [(nuevo_id, i.producto_id, i.cantidad, i.precio_unitario_cop) for i in reserva.items])
+        return nuevo_id
+
+    def insertar_si_libre(self, reserva: Reserva, duracion_min: int) -> int | None:
+        """Comprueba el solape y guarda la reserva con su pre-pedido en UNA transacción exclusiva (BEGIN IMMEDIATE).
+
+        Devuelve el id nuevo, o None si la mesa ya está ocupada en esa franja. Como el bloqueo de escritura se toma
+        antes de comprobar, dos procesos (o dos conexiones) no pueden reservar la misma mesa a la vez.
+        Las horas son «HH:MM»: se pasan a minutos en SQL y dos reservas chocan si distan menos de `duracion_min`."""
+        h, m = reserva.hora.split(":")[:2]
+        minutos = int(h) * 60 + int(m)
+        marcas = ", ".join("?" for _ in self.columnas)
+        with ConexionBD().sesion_inmediata() as con:
+            choque = con.execute(
+                "SELECT 1 FROM reserva WHERE mesa_id = ? AND fecha = ? AND estado <> 'CANCELADA' AND "
+                "ABS((CAST(substr(hora, 1, 2) AS INTEGER) * 60 + CAST(substr(hora, 4, 2) AS INTEGER)) - ?) < ? LIMIT 1",
+                (reserva.mesa_id, reserva.fecha, minutos, duracion_min)).fetchone()
+            if choque:
+                return None
             cur = con.execute(
                 f"INSERT INTO reserva ({', '.join(self.columnas)}) VALUES ({marcas})", self._valores(reserva))
             nuevo_id = int(cur.lastrowid)
@@ -281,6 +306,23 @@ class ReservaItemDAO(BaseDAO[ReservaItem]):
         with ConexionBD().sesion() as con:
             filas = con.execute("SELECT * FROM reserva_item WHERE reserva_id = ? ORDER BY id", (reserva_id,)).fetchall()
         return [self._desde_fila(f) for f in filas]
+
+    def listar_con_nombre(self, reserva_ids: list[int]) -> dict[int, list[tuple[ReservaItem, str]]]:
+        """Pre-pedidos de muchas reservas en UNA consulta (evita el N+1): {reserva_id: [(item, nombre del plato)]}."""
+        if not reserva_ids:
+            return {}
+        marcas = ", ".join("?" for _ in reserva_ids)
+        with ConexionBD().sesion() as con:
+            filas = con.execute(
+                f"SELECT i.*, p.nombre AS nombre_producto FROM reserva_item i "
+                f"LEFT JOIN producto p ON p.id = i.producto_id WHERE i.reserva_id IN ({marcas}) ORDER BY i.id",
+                list(reserva_ids)).fetchall()
+        resultado: dict[int, list[tuple[ReservaItem, str]]] = {}
+        for fila in filas:
+            datos = dict(fila)
+            nombre = datos.pop("nombre_producto") or "(producto eliminado)"
+            resultado.setdefault(datos["reserva_id"], []).append((ReservaItem(**datos), nombre))
+        return resultado
 
     def ingresos_estimados(self, restaurante_id: int, desde_fecha: str) -> int:
         """Suma de pre-pedidos de reservas no canceladas desde una fecha."""

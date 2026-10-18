@@ -86,6 +86,13 @@ class Reserva:
     estado: str = "PENDIENTE"
     notas: str = ""
     creado_en: str = ""
+    # Instantánea del cobro al crear la reserva (columnas de `reserva`; ver `cobro_decorator.instantanea`)
+    subtotal_cop: int = 0
+    descuento_pct: int = 0
+    descuento_cop: int = 0
+    impuesto_pct: int = 0
+    impuesto_cop: int = 0
+    total_pagar_cop: int = 0
     items: list["ReservaItem"] = field(default_factory=list)   # pre-pedido (no es columna de `reserva`)
 
     @property

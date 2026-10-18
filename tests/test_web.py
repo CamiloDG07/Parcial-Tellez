@@ -95,7 +95,7 @@ def test_flujo_completo_reserva_confirmacion_y_doble_reserva(cliente_web, admin_
     r = reservar(cliente_web)
     assert r.status_code == 303 and r.headers["location"] == "/mis-reservas"
     pagina = cliente_web.get("/mis-reservas").text
-    assert "PENDIENTE" in pagina and "Freddy" in pagina
+    assert "PENDIENTE" in pagina and "Slice Palace" in pagina
 
     # doble reserva de la misma mesa y hora → rechazada con mensaje amigable
     r2 = reservar(cliente_web, hora="20:00")
@@ -170,3 +170,34 @@ def test_error_amigable_sin_traza(bd):
     r = c.get("/ruta-inexistente")
     assert r.status_code == 404 and "Traceback" not in r.text
     assert c.get("/reservar?restaurante_id=abc").status_code in (200, 303, 422)
+
+
+def test_chips_de_cocina_en_directorio(bd):
+    c = TestClient(app)
+    html = c.get("/restaurantes").text
+    for cocina in ("PIZZERÍA", "COLOMBIANA", "JAPONESA", "PARRILLA", "ITALIANA"):
+        assert f">{cocina}</a>" in html
+    activo = c.get("/restaurantes?cocina=Parrilla").text
+    assert re.search(r'class="chip activo" href="/restaurantes\?cocina=Parrilla"', activo)
+    assert "Cámara 04 Parrilla" in activo and "Backstage" not in activo
+
+
+def test_aviso_del_restaurante_elegido_al_reservar(cliente_web):
+    html = cliente_web.get("/reservar?restaurante_id=2").text
+    assert "ESTÁS RESERVANDO EN" in html and "La Cocina del Turno Noche" in html
+    assert "/carta?restaurante_id=2" in html
+    assert "ESTÁS RESERVANDO EN" not in cliente_web.get("/reservar").text      # sin restaurante elegido no hay aviso
+
+
+def test_autosembrar_siembra_bd_vacia_y_no_borra_existente(tmp_path, monkeypatch):
+    from app import config
+    from app.datos.conexion import ConexionBD
+    ruta = str(tmp_path / "auto.db")
+    ConexionBD.reiniciar(ruta)
+    monkeypatch.setattr(config, "AUTOSEMBRAR", True)
+    with TestClient(app) as c:                                   # el lifespan siembra la BD vacía
+        assert "Slice Palace Medianoche" in c.get("/restaurantes").text
+    with ConexionBD().sesion() as con:
+        con.execute("UPDATE restaurante SET nombre = 'Editado' WHERE id = 1")
+    with TestClient(app) as c:                                   # segundo arranque: no resiembra ni pisa datos
+        assert "Editado" in c.get("/restaurantes").text

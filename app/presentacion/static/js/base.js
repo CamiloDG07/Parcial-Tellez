@@ -27,6 +27,9 @@
     if (b && !window.confirm(b.dataset.confirmar)) ev.preventDefault();
   });
 
+  // Botones «imprimir» (sin atributos onclick, para poder usar una CSP estricta).
+  document.addEventListener('click', (ev) => { if (ev.target.closest('[data-imprimir]')) window.print(); });
+
   // Toasts de éxito/error (región aria-live), reutilizables desde otros scripts.
   let contenedor;
   window.mostrarToast = (texto, tipo = 'ok') => {

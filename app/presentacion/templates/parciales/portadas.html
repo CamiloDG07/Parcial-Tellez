@@ -1,0 +1,30 @@
+{# Portadas ilustradas (SVG propio, sin material de terceros) según el tipo de cocina. Uso: {{ portada(r.tipo_cocina) }} #}
+{% macro portada(tipo) -%}
+{% set t = (tipo or '')|lower %}
+<svg class="portada" viewBox="0 0 320 110" role="img" aria-label="Ilustración de cocina {{ tipo }}" preserveAspectRatio="xMidYMid meet">
+  
+  <rect width="320" height="110" fill="#120d22"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="3">
+  {% if 'pizz' in t %}
+    <circle cx="160" cy="55" r="38" stroke="#f2b705"/><circle cx="160" cy="55" r="31" stroke="#7b3fb0"/>
+    <path d="M160 17v76M122 55h76M133 28l54 54M187 28l-54 54" stroke="#3a2a58" stroke-width="2"/>
+    <circle cx="146" cy="42" r="5" stroke="#ff6b72"/><circle cx="176" cy="46" r="5" stroke="#ff6b72"/><circle cx="150" cy="70" r="5" stroke="#ff6b72"/><circle cx="178" cy="70" r="5" stroke="#ff6b72"/>
+  {% elif 'colomb' in t %}
+    <path d="M110 58h100a50 40 0 0 1-100 0z" stroke="#f2b705"/><path d="M104 58h112" stroke="#f2b705"/>
+    <path d="M135 44c-8-8 8-12 0-22M160 44c-8-8 8-12 0-22M185 44c-8-8 8-12 0-22" stroke="#39ff7e"/>
+  {% elif 'japon' in t or 'sushi' in t %}
+    <ellipse cx="140" cy="62" rx="34" ry="24" stroke="#f2b705"/><ellipse cx="140" cy="62" rx="20" ry="13" stroke="#39ff7e"/><ellipse cx="140" cy="62" rx="6" ry="4" stroke="#ff6b72"/>
+    <ellipse cx="205" cy="68" rx="26" ry="18" stroke="#b58be0"/><ellipse cx="205" cy="68" rx="14" ry="9" stroke="#f2b705"/>
+    <path d="M60 20l120 30M72 14l120 30" stroke="#7b3fb0"/>
+  {% elif 'parrill' in t %}
+    <path d="M95 60h130M95 74h130M95 88h130M110 52v44M135 52v44M160 52v44M185 52v44M210 52v44" stroke="#f2b705" stroke-width="2.5"/>
+    <path d="M160 46c-14-10 2-18-4-32 14 6 26 18 22 30-2 6-10 6-18 2z" stroke="#ff6b72"/>
+  {% elif 'italian' in t %}
+    <path d="M120 22v30a10 10 0 0 0 20 0V22M130 22v68" stroke="#f2b705"/><path d="M200 22c-12 24-12 36 0 38v30" stroke="#f2b705"/>
+    <path d="M165 40c20-8 30 6 14 14-18 8-34-2-22-14 10-8 28-4 28 8" stroke="#39ff7e"/>
+  {% else %}
+    <path d="M95 76h130" stroke="#f2b705"/><path d="M105 76a55 42 0 0 1 110 0" stroke="#f2b705"/><circle cx="160" cy="30" r="6" stroke="#39ff7e"/>
+  {% endif %}
+  </g>
+</svg>
+{%- endmacro %}

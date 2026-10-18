@@ -4,10 +4,12 @@ from __future__ import annotations
 import threading
 from abc import ABC, abstractmethod
 
+from app import config
 from app.datos.dao import ReservaDAO
 from app.datos.modelos import Mesa, Reserva, Usuario
 from app.negocio.excepciones import NoEncontradoError, ReglaNegocioError
 from app.negocio.patrones.creacionales.reserva_builder import ReservaBuilder, hay_solape
+from app.negocio.patrones.estructurales.cobro_decorator import instantanea
 from app.negocio.servicios.restaurante_service import MesaService
 
 TRANSICIONES = {
@@ -47,7 +49,9 @@ class ReservaService(IReservaService):
     """PATRÓN ESTRUCTURAL · Proxy (rol: RealSubject). Contiene la lógica; NO comprueba permisos
     (eso lo hace `ReservaServiceProxy`). Construye cada reserva con `ReservaBuilder`."""
 
-    _cerrojo = threading.Lock()   # evita carreras entre comprobar el solape e insertar (un solo proceso)
+    # Dos defensas contra la doble reserva: el cerrojo (hilos de un proceso) y, sobre todo, la transacción
+    # BEGIN IMMEDIATE de `insertar_si_libre` (varios procesos o conexiones).
+    _cerrojo = threading.Lock()
 
     def __init__(self, dao: ReservaDAO, mesas: MesaService, builder_factory) -> None:
         self._dao, self._mesas, self._nuevo_builder = dao, mesas, builder_factory
@@ -64,7 +68,12 @@ class ReservaService(IReservaService):
                                        .con_items(datos.get("items")))
         with self._cerrojo:
             reserva = constructor.build()
-            reserva.id = self._dao.insertar_con_items(reserva)
+            for campo, valor in instantanea(reserva.items).items():      # cobro congelado al crear (auditable)
+                setattr(reserva, campo, valor)
+            nuevo_id = self._dao.insertar_si_libre(reserva, config.DURACION_RESERVA_MIN)
+        if nuevo_id is None:                        # otra reserva ganó la mesa entre la validación y el guardado
+            raise ReglaNegocioError("La mesa ya está reservada en ese horario.")
+        reserva.id = nuevo_id
         return reserva
 
     def obtener(self, actor: Usuario, reserva_id: int) -> Reserva:

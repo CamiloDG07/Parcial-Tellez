@@ -45,9 +45,10 @@ def entrar(email, pw):
 
 # ---------- seed de la carta ----------
 def test_seed_carta_demo(bd):
-    for rid in (1, 5):
+    esperado = {1: [5, 4, 3], 5: [4, 5, 5]}          # pizzería y trattoria: cada una con su propia carta
+    for rid, conteo in esperado.items():
         carta = carta_service.carta(rid)
-        assert [len(s["productos"]) for s in carta] == [9, 9, 8]
+        assert [len(s["productos"]) for s in carta] == conteo
         assert [s["categoria"].nombre for s in carta] == ["Entrada", "Plato fuerte", "Postre"]
     p = producto_dao.obtener_por_id(1)
     assert (p.nombre, p.precio_cop, p.imagen) == ("Bruschetta Clásica", 18000, "bruschetta-clasica.jpg")
@@ -108,7 +109,7 @@ def test_carrito_rechaza_otro_restaurante_y_no_disponible(admin):
     sesion = {}
     carrito_service.agregar(sesion, 1, 1)
     with pytest.raises(ReglaNegocioError, match="otro restaurante"):
-        carrito_service.agregar(sesion, 27, 1)          # producto del restaurante 5
+        carrito_service.agregar(sesion, 13, 1)          # producto del restaurante 5
     carta_service.alternar_disponibilidad(admin, 3)
     with pytest.raises(ReglaNegocioError, match="no está disponible"):
         carrito_service.agregar(sesion, 3, 1)
@@ -131,7 +132,7 @@ def test_reserva_con_items_guarda_total_y_precio_congelado(cliente, admin):
 
 def test_reserva_rechaza_producto_ajeno_o_no_disponible(cliente, admin):
     with pytest.raises(ReglaNegocioError, match="no pertenece"):
-        reserva_service.crear_reserva(cliente, datos(items=[(27, 1)]))
+        reserva_service.crear_reserva(cliente, datos(items=[(13, 1)]))
     with pytest.raises(ReglaNegocioError, match="no pertenece"):
         reserva_service.crear_reserva(cliente, datos(items=[(9999, 1)]))
     carta_service.alternar_disponibilidad(admin, 1)
@@ -162,7 +163,7 @@ def test_fachada_pre_pedido_vacia_el_carrito(cliente):
     fachada.carrito_agregar(sesion, 1, 2)
     r = fachada.reservar_con_pre_pedido(cliente, datos(), sesion)
     assert r.total_cop == 36000 and fachada.carrito_ver(sesion)["cantidad"] == 0
-    fachada.carrito_agregar(sesion, 27, 1)               # carrito de otro restaurante
+    fachada.carrito_agregar(sesion, 13, 1)               # carrito de otro restaurante (producto 13 = primer plato del restaurante 5)
     with pytest.raises(ReglaNegocioError, match="otro restaurante"):
         fachada.reservar_con_pre_pedido(cliente, datos(hora="14:00"), sesion)
     assert [f["total_cop"] for f in fachada.mis_reservas(cliente)] == [36000]
@@ -219,7 +220,7 @@ def test_flujo_web_registro_carta_pre_pedido_reserva_y_panel(bd):
     assert c.post("/api/carrito/agregar", json={"producto_id": 1, "cantidad": 2}).status_code == 403   # sin CSRF
     r = c.post("/api/carrito/agregar", json={"producto_id": 1, "cantidad": 2}, headers=h)
     assert r.json()["total_cop"] == 36000
-    assert c.post("/api/carrito/agregar", json={"producto_id": 27, "cantidad": 1}, headers=h).status_code == 400
+    assert c.post("/api/carrito/agregar", json={"producto_id": 13, "cantidad": 1}, headers=h).status_code == 400
     assert c.get("/api/carrito").json()["cantidad"] == 2          # persiste en la sesión
     pagina = c.get("/reservar?restaurante_id=1").text
     assert "TOTAL ESTIMADO" in pagina and "$36.000" in pagina
