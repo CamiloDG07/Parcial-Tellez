@@ -8,3 +8,4 @@ __pycache__/
 app/presentacion/static/uploads/*
 !app/presentacion/static/uploads/.gitkeep
 node_modules/
+capturas_e2e/
