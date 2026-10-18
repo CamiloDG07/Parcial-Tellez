@@ -31,5 +31,16 @@ Archivos incluidos en el repositorio: `render.yaml` (Blueprint), `Procfile` y `r
 
 ## Probado / no probado
 
-- Verificado en el entorno de desarrollo: la app arranca con solo `requirements-prod.txt` en un entorno virtual limpio, usando exactamente el comando de `Procfile` con `HTTPS_ONLY=1` y `AUTOSEMBRAR=1`; `/login` responde 200 con cookie `Secure` y cabeceras de seguridad, y `/restaurantes` lista los restaurantes sembrados.
-- **No** verificado todavía: el despliegue real en Render (hay que hacerlo con una cuenta propia y anotar aquí la URL resultante).
+**Probado el 18-oct-2026 en Windows 11 con Python 3.14.3 (local, no en Render):**
+- Entorno virtual nuevo con solo `requirements-prod.txt` (22 paquetes): arranque con el comando exacto de `Procfile` y `AUTOSEMBRAR=1`, `HTTPS_ONLY=1`. La base se sembró sola; `/login` respondió 200 con cookie `httponly; samesite=lax; secure` y cabecera `strict-transport-security`; las cartas de los 5 restaurantes respondieron 200.
+- En PowerShell, con `$env:AUTOSEMBRAR="1"; $env:HTTPS_ONLY="0"` y `uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'` la app arranca y responde 200.
+- Entorno virtual nuevo con `requirements.txt`, `seed --reset`, `uvicorn` y una reserva completa por HTTP; E2E de Playwright sin fallos.
+
+**No probado:**
+- El despliegue real en Render: no hay sesión de Render CLI ni clave de API en este equipo y no se crearon credenciales. URL pública: **no probada**. Tampoco se probó la cabecera HSTS desde una URL pública `https://`.
+- `PYTHON_VERSION=3.13.5` (la que fija `render.yaml`) no se ejecutó localmente: la prueba local fue con 3.14.3. Se dejó 3.13.5 porque no se verificó que Render soporte 3.14; si el build falla por la versión, probar con otra versión soportada.
+
+**Pasos exactos para desplegar (Blueprint, 3 clics):**
+1. Entrar a <https://dashboard.render.com> con la cuenta propia y elegir **New → Blueprint**.
+2. Conectar el repositorio `CamiloDG07/Parcial-Tellez` y elegir la rama `fase-6-entrega` (ya está subida a GitHub); Render lee `render.yaml`.
+3. **Apply**: esperar el build (`pip install -r requirements-prod.txt`) y abrir `https://midnight-diner.onrender.com` (o la URL que asigne Render). Probar `cliente@demo.com` / `Cliente123!`, una reserva completa y `admin@demo.com` / `Admin123!`. Anotar aquí la URL y la fecha si se prueba.
